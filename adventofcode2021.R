@@ -4,7 +4,7 @@ library('rbenchmark')
 
 get_advent = function(day, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ',', as.numeric = TRUE) {
   url = paste0('https://adventofcode.com/2021/day/',day,'/input')
-  headers = c('cookie' = 'bla')
+  headers = c('cookie' = readLines("~/Progs/adventofcode/adventofcode2021-cookie.txt", w=F))
   r = GET(url, add_headers(headers))
   content = content(r)
   if(raw) return(content)
@@ -16,19 +16,14 @@ get_advent = function(day, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ','
 }
 
 #
-# Day 6: Lanternfish ----
+# Day 6: Lanternfish ------------------------------------------------------
 #
 
-day6_input = get_advent(6, FALSE)
+#day6_input = c(3,4,3,1,2) # example data
+day6_input = get_advent(6)
 
+day6_df <- function(life) {
 
-day6_df <- function(input) {
-
-  #life = c(3,4,3,1,2)
-  
-  life = str_trim(input)
-  life = str_split(life, ',')[[1]]
-  
   df = as.data.frame(table(life))
   df$life = as.numeric(df$life)
   
@@ -42,14 +37,7 @@ day6_df <- function(input) {
 
 }
 
-
-day6_vector <- function(input) {
-  
-  #days_to_birth = c(3,4,3,1,2)
-  
-  days_to_birth = str_trim(input)
-  days_to_birth = str_split(days_to_birth, ',')[[1]]
-  days_to_birth = as.numeric(days_to_birth)
+day6_vector <- function(days_to_birth) {
   
   tally = c()
   for(d in seq(0,8)) tally[d+1] = as.numeric(sum(days_to_birth == d)) # eg: tally [1] 0 1 1 2 1 0 0 0 0
@@ -74,10 +62,10 @@ b
 b$elapsed / b$replications * 1000 # ms per iteration
 
 #
-# 7a
+# Day 7: The Treachery of Whales ------------------------------------------
 #
 
-day7_input = c(16,1,2,0,4,2,7,1,2,14)
+# day7_input = c(16,1,2,0,4,2,7,1,2,14) # example data
 day7_input = get_advent(7)
 
 day7a = function(day7_input) {
@@ -86,16 +74,15 @@ day7a = function(day7_input) {
   min(df$fuel7a)
 }
 
-#
-# 7b
-#
-
 day7b = function(day7_input) {
   triangulat0r = function(n) (n^2+n)/2
   df$fuel7b = sapply(df$pos, function(p) sum(triangulat0r(abs(day7_input - p))))
   min(df$fuel7b)
 }
 
-b = benchmark('day7a'=day7a(day7_input),'day7b'=day7b(day7_input))
+day7a(day7_input)
+day7b(day7_input)
+
+b = benchmark('day7a'=day7a(day7_input), 'day7b'=day7b(day7_input))
 b
 b$elapsed / b$replications * 1000 # ms per iteration
