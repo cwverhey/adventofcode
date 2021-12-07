@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Dec  4 06:11:47 2021
-
-@author: caspar
-"""
 
 import requests
 
 def get_advent(day, numeric = False, raw = False, lines=False):
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
-    headers = {'cookie': 'bla'}
+    headers = {'cookie': open('/Users/caspar/Progs/adventofcode/adventofcode2021-cookie.txt', 'r').read().strip()}
     result = requests.get(url, headers=headers).text
     if raw: return result
     if lines: return result.split('\n')[:-1]
@@ -19,11 +14,15 @@ def get_advent(day, numeric = False, raw = False, lines=False):
     return result
 
 #
+# Day 1: Sonar Sweep
+#
+
+#
 # 1a
 #
 
+#input = [199,200,208,210,200,207,240,269,260,263] # example input
 input = get_advent(1, numeric = True)
-#input = [199,200,208,210,200,207,240,269,260,263]
 
 answer = sum([1 for i in range(1, len(input)) if input[i] > input[i-1]])
 print('answer 1a:',answer)
@@ -37,12 +36,15 @@ windowsum = [sum(input[i:i+3]) for i in range(0, len(input)-2)]
 answer = sum([1 for i in range(1, len(windowsum)) if windowsum[i] > windowsum[i-1]])
 print('answer 1b:',answer)
 
+#
+# Day 2: Dive!
+# 
 
 #
 # 2a
 #
 
-input = get_advent(2, raw=True).split('\n')[:-1]
+input = get_advent(2, raw=True).strip().split('\n')
 
 forward = 0
 depth = 0
@@ -82,6 +84,9 @@ for l in input:
 answer = forward * depth
 print('answer 2b:',answer)
 
+#
+# Day 3: Binary Diagnostic
+#
 
 #
 # 3a
@@ -89,8 +94,8 @@ print('answer 2b:',answer)
 
 import numpy as np
 
-input = get_advent(3)
 #input = ['00100','11110','10110','10111','10101','01111','00111','11100','10000','11001','00010','01010']
+input = get_advent(3)
 
 nparr = np.array([[int(c) for c in l] for l in input]).T
 
@@ -138,6 +143,9 @@ co2 = int(''.join(co2[0]),2)
 answer = oxygen * co2
 print('answer 3b:',answer)
 
+#
+# Day 4: Giant Squid
+#
 
 #
 # 4a
@@ -195,9 +203,6 @@ for draw in draws:
         
     if winner: break
 
-
-#print('winner: {}, after draw: {}'.format(i,draw))
-
 print('answer 4a:',bingo_score(boards[i], draw))
 
 #
@@ -223,11 +228,13 @@ for draw in draws:
         last_winners = list(winners)
         break
 
-#print('last winner(s):',last_winners)
-
 for i in last_winners:
     print('answer 4b:',bingo_score(boards[i], draw))
-    
+
+#
+# Day 5: Hydrothermal Venture
+#
+
 #
 # 5a
 #
@@ -278,22 +285,26 @@ answer = len([t for t in tally.values() if t > 1])
 print('answer 5b:',answer)
 
 #
+# Day 6: Lanternfish
+#
+
+#
 # 6a
 #
 
-fish = [3,4,3,1,2]
+#fish = [3,4,3,1,2] # example data
 
 input = get_advent(6)
 fish = [int(x) for x in input[0].split(',')]
 
 
-for d in range(1, 256+1):
+for d in range(1, 80+1):
     
     fish = [x - 1 for x in fish] # decrease all fish age by 1
     fish += [8]*fish.count(-1) # add new fish as 8
     fish = [6 if x == -1 else x for x in fish] # reset fish with -1 days to 6
     answer = len(fish)
-    print('after {} days: {} fish'.format(d, answer))
+    if d == 80: print('after {} days: {} fish'.format(d, answer))
     
 
 #
@@ -346,6 +357,8 @@ def day6_list(raw_input):
 input = get_advent(6, raw=True)
 day6_np(input)
 day6_list(input)
+
+import timeit
 
 timeit.timeit(globals=globals(), stmt='day6_np(input)', number=5)*1000
 timeit.timeit(globals=globals(), stmt='day6_list(input)', number=5)*1000
