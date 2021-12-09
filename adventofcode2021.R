@@ -2,8 +2,8 @@ library('httr')
 library('stringr')
 library('rbenchmark')
 
-get_advent = function(day, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ',', as.numeric = TRUE) {
-  url = paste0('https://adventofcode.com/2021/day/',day,'/input')
+get_advent = function(day, year = 2021, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ',', as.numeric = TRUE) {
+  url = paste0('https://adventofcode.com/',year,'/day/',day,'/input')
   headers = c('cookie' = readLines("~/Progs/adventofcode/adventofcode2021-cookie.txt", w=F))
   r = GET(url, add_headers(headers))
   content = content(r)
@@ -86,3 +86,91 @@ day7b(day7_input)
 b = benchmark('day7a'=day7a(day7_input), 'day7b'=day7b(day7_input))
 b
 b$elapsed / b$replications * 1000 # ms per iteration
+
+#
+# Day 9: Smoke Basin ------------------------------------------------------
+#
+
+#
+# 9b
+#
+
+# example task
+day9_input = "2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+"
+
+# real task
+day9_input = get_advent(9, 2021, raw=T)
+
+# task to matrix
+input = str_trim(day9_input)
+input = str_split(input, '\n')[[1]]
+input = str_split(input,'')
+mat = do.call(rbind, input)
+mat = matrix(as.numeric(mat), ncol=ncol(mat))
+
+#
+# 9a
+#
+
+# function to test if a point is lower than any of its adjacent locations
+is.lowpoint = function(mat, r, c) {
+  val = mat[r,c]
+  if(r != 1         && mat[r-1,c] <= val) return(F)
+  if(r != nrow(mat) && mat[r+1,c] <= val) return(F)
+  if(c != 1         && mat[r,c-1] <= val) return(F)
+  if(c != ncol(mat) && mat[r,c+1] <= val) return(F)
+  return(T)
+}
+
+risklevel = 0
+
+for(row in seq_len(nrow(mat))) {
+  for(col in seq_len(ncol(mat))) {
+    if(is.lowpoint(mat,row,col)) {
+      cat("low point:",row,col,'\n')
+      risklevel = risklevel + 1 + mat[row,col]
+    }
+  }
+}
+
+cat('answer for 9a:',risklevel,'\n')
+
+#
+# 9b
+#
+
+# create a map-overlay that holds the basin# per location
+basins = matrix(NA, nrow=nrow(mat), ncol=ncol(mat))
+nextbasinnr = 0
+
+# function to set a point and its neighbors to a basin# IF it is not already in a basin
+fill_basin = function(basin, mat, r, c, basinnr) {
+  
+  if(!is.na(basin[r,c]) || mat[r,c] == 9) return(basin) # return immediately if basin was already set or it is 9
+  basin[r,c] = basinnr
+  
+  val = mat[r,c]
+  if(r != 1        ) basin = fill_basin(basin, mat, r-1, c, basinnr)
+  if(r != nrow(mat)) basin = fill_basin(basin, mat, r+1, c, basinnr)
+  if(c != 1        ) basin = fill_basin(basin, mat, r, c-1, basinnr)
+  if(c != ncol(mat)) basin = fill_basin(basin, mat, r, c+1, basinnr)
+  
+  return(basin)
+  
+}
+
+# fill the entire basins grid
+for(row in seq_len(nrow(mat))) {
+  for(col in seq_len(ncol(mat))) {
+    basins = fill_basin(basins, mat, row, col, nextbasinnr)
+    nextbasinnr = nextbasinnr + 1
+  }
+}
+
+answer = prod(head(sort(table(basins),d=T),n=3))
+cat('answer for 9b:',answer,'\n')
