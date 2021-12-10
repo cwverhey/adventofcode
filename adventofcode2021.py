@@ -3,6 +3,11 @@
 
 import requests
 from collections import Counter
+import json
+from datetime import datetime
+from datetime import date
+import statistics
+import numpy as np
 
 def get_advent(day, numeric = False, raw = False, lines=False):
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
@@ -13,6 +18,39 @@ def get_advent(day, numeric = False, raw = False, lines=False):
     result = result.split()
     if numeric: result = [int(x) for x in result]
     return result
+
+def leaderboard_time(ts,day):
+    
+    if day == 'today':
+        day = date.today().strftime("%-d")
+        
+    stampday = datetime.fromtimestamp(ts).strftime('%-d')
+    
+    if day == stampday:
+        return datetime.fromtimestamp(ts).strftime('%H:%M')
+    else:
+        return datetime.fromtimestamp(ts).strftime('%-d-%-m %H:%M')
+    
+def leaderboard():
+    url = 'https://adventofcode.com/2021/leaderboard/private/view/380357.json'
+    headers = {'cookie': open('/Users/caspar/Progs/adventofcode/adventofcode2021-cookie.txt', 'r').read().strip()}
+    result = requests.get(url, headers=headers).text
+    
+    data = json.loads(result)
+    
+    for member in sorted(data['members'].values(), key=lambda m: -m['local_score']):
+        print("{} (⭐️{})".format(member['name'], member['local_score']))
+        print('last activity:',leaderboard_time(member['last_star_ts'],'today'))
+        for lvl,times in sorted(member['completion_day_level'].items()):
+            print(f'day {lvl}:',end=' ')
+            for part,time in sorted(times.items()):
+                print(leaderboard_time(time['get_star_ts'],lvl), end=' ')
+                if part == '1' and len(times) == 2: print('/', end=' ')
+            if len(times) == 2: print('(∆t {}min)'.format(int((times['2']['get_star_ts']-times['1']['get_star_ts'])/60)), end=' ')
+            print()
+        print()
+    
+leaderboard()
 
 #
 # Day 1: Sonar Sweep
@@ -92,8 +130,6 @@ print('answer 2b:',answer)
 #
 # 3a
 #
-
-import numpy as np
 
 #input = ['00100','11110','10110','10111','10101','01111','00111','11100','10000','11001','00010','01010']
 input = get_advent(3)
@@ -360,7 +396,6 @@ day6_np(input)
 day6_list(input)
 
 import timeit
-
 timeit.timeit(globals=globals(), stmt='day6_np(input)', number=5)*1000
 timeit.timeit(globals=globals(), stmt='day6_list(input)', number=5)*1000
 
@@ -462,3 +497,79 @@ def translate(line):
 
 answer = sum([translate(line) for line in input])
 print('answer 8b:', answer)
+
+import timeit
+timeit.timeit(globals=globals(), stmt='sum([translate(line) for line in input])', number=10)
+
+#
+# Day 10: Syntax Scoring
+#
+
+input_day10 = '''
+[({(<(())[]>[[{[]{<()<>>
+[(()[<>])]({[<{<<[]>>(
+{([(<{}[<>[]}>{[]{[(<()>
+(((({<>}<{<{<>}{[]{[]{}
+[[<[([]))<([[{}[[()]]]
+[{[{({}]{}}([{[{{{}}([]
+{<[[]]>}<{[{[{[]{()[[[]
+[<(<(<(<{}))><([]([]()
+<{([([[(<>()){}]>(<<{{
+<{([{{}}[<[[[<>{}]]]>[]]
+'''
+
+input_day10 = get_advent(10,raw=True)
+
+lines = input_day10.strip().split('\n')
+
+#
+# 10a
+#
+
+opener = {')':'(',']':'[','}':'{','>':'<'}
+points = {')':3,']':57,'}':1197,'>':25137}
+
+def check_line(line):
+    
+    stack = []
+    
+    for c in line:
+        
+        # put opening bracket on the stack
+        if c in opener.values():
+            stack.append(c)
+            
+        # pull closing bracket from the stack
+        else:
+            if not stack or stack.pop() != opener[c]:
+                return({'score': points[c], 'stack': stack})
+            
+    return({'score': 0, 'stack': stack})
+    
+answer = sum([check_line(l)['score'] for l in lines])
+print('answer 10a:', answer)
+
+#
+# 10b
+#
+
+points_b = {'(':1,'[':2,'{':3,'<':4}
+
+scores = []
+for l in lines:
+    
+    check = check_line(l)
+    
+    # check if line is correct
+    if check['score'] != 0: continue
+    
+    score = 0
+    for c in reversed(check['stack']):
+        print(c)
+        score *= 5
+        score += points_b[c]
+    print()
+    scores.append(score)
+
+answer = statistics.median(scores)
+print('answer 10b:', answer)
