@@ -23,6 +23,8 @@ def leaderboard_time(ts,day):
     
     if day == 'today':
         day = date.today().strftime("%-d")
+    else:
+        day = str(day)
         
     stampday = datetime.fromtimestamp(ts).strftime('%-d')
     
@@ -30,7 +32,8 @@ def leaderboard_time(ts,day):
         return datetime.fromtimestamp(ts).strftime('%H:%M')
     else:
         return datetime.fromtimestamp(ts).strftime('%-d-%-m %H:%M')
-    
+
+# don't call the leaderboard too often; AoC says every 15 min maximum, and this function doesn't cache it!
 def leaderboard():
     url = 'https://adventofcode.com/2021/leaderboard/private/view/380357.json'
     headers = {'cookie': open('/Users/caspar/Progs/adventofcode/adventofcode2021-cookie.txt', 'r').read().strip()}
@@ -276,8 +279,6 @@ for i in last_winners:
 #
 # 5a
 #
-
-from collections import Counter
 
 def getallpoints(c):
     x_step = 1 if c[0] <= c[2] else -1
