@@ -41,8 +41,9 @@ def leaderboard():
     for member in sorted(data['members'].values(), key=lambda m: -m['local_score']):
         print("{} (⭐️{})".format(member['name'], member['local_score']))
         print('last activity:',leaderboard_time(member['last_star_ts'],'today'))
+        member['completion_day_level'] = {int(k):v for k,v in member['completion_day_level'].items()}
         for lvl,times in sorted(member['completion_day_level'].items()):
-            print(f'day {lvl}:',end=' ')
+            print(f'day {lvl:02}:',end=' ')
             for part,time in sorted(times.items()):
                 print(leaderboard_time(time['get_star_ts'],lvl), end=' ')
                 if part == '1' and len(times) == 2: print('/', end=' ')
