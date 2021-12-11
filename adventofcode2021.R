@@ -193,3 +193,76 @@ day9b(mat)
 b = benchmark('day9a'=day9a(mat), 'day9b'=day9b(mat))
 b
 b$elapsed / b$replications * 1000 # ms per iteration
+
+#
+# Day 11: Dumbo Octopus ---------------------------------------------------
+#
+
+# example task
+day11_input = '5483143223
+2745854711
+5264556173
+6141336146
+6357385478
+4167524645
+2176841721
+6882881134
+4846848554
+5283751526
+'
+
+day11_input = get_advent(11, 2021, raw=T)
+
+# raw input to matrix
+input = str_trim(day11_input)
+input = str_split(input, '\n')[[1]]
+input = str_split(input,'')
+mat = do.call(rbind, input)
+mat = matrix(as.numeric(mat), ncol=ncol(mat))
+
+# get adjacent cells
+adjacent = function(x,y) {
+  df = data.frame(row=x+c(-1,-1,-1,0,0,1,1,1), col=y+c(-1,0,1,-1,1,-1,0,1))
+  return(df[df$row>0 & df$col>0 & df$row<11 & df$col<11,])
+}
+
+# perform single step, return number of flashes
+flash_step = function() {
+  
+  # perform single step
+  mat <<- mat + 1 # add 1
+  nflashes = 0 # store number of flashes
+  while(T) {
+    f = which(mat>9, arr.ind = T) # get all 'flashers' > 9
+    if(length(f) == 0) break
+    nflashes = nflashes + length(f)/2
+    
+    for(r in seq_len(nrow(f))) { # flash a single cell
+      mat[f[r,'row'], f[r,'col']] <<- NA # set to NA so it won't increase again during this round
+      neighbors = adjacent(f[r,'row'], f[r,'col']) # get neighbors
+      for(n in seq_len(nrow(neighbors))) mat[neighbors[n,'row'], neighbors[n,'col']] <<- mat[neighbors[n,'row'], neighbors[n,'col']] + 1 # +1 to neighbors
+    }
+  }
+  mat[is.na(mat)] <<- 0 # set flashed cells to 0
+  return(nflashes)
+}
+
+# 11a
+
+flash_count = 0
+for(i in seq_len(100)) {
+  flash_count = flash_count + flash_step()
+}
+
+cat('answer for 11a:',flash_count,'\n')
+
+# 11b
+
+step = 0
+flashed = 0
+while(flashed != nrow(mat)*ncol(mat)) {
+  flashed = flash_step()
+  step = step + 1
+}
+
+cat('answer for 11b:',step,'\n')
