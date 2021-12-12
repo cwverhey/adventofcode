@@ -627,12 +627,12 @@ input_day12 = get_advent(12, lines=True)
 # get set of cave names, eg {'start', 'end', 'A'}
 caves = set([c for line in input_day12 for c in line.split('-')])
 
-# get list of unidirectional cave connections, eg [('start','A), ('A','start'), ('end','A'), ('A','end')]
-connections = []
+# get list of cave connections per cave, eg {'start':['A'], 'A':['start','end'], 'end':['A']}
+connections = {c:[] for c in caves}
 for line in input_day12:
     c = line.split('-')
-    connections.append((c[0],c[1]))
-    connections.append((c[1],c[0]))
+    if(c[1] != 'start'): connections[c[0]].append(c[1])
+    if(c[0] != 'start'): connections[c[1]].append(c[0])
 
 # 12a
 
@@ -648,11 +648,11 @@ def complete_routesA(route):
         
     else:
         
-        # successful paths
+        # store successful paths
         paths = []
 
         # get list of all possible next caves
-        next_ = [c[1] for c in connections if c[0] == route[-1] and (c[1].isupper() or c[1] not in route)]
+        next_ = [c for c in connections[route[-1]] if c.isupper() or c not in route]
     
         # enter, then exit every next cave (backtracking)
         for n in next_:
@@ -681,17 +681,18 @@ def complete_routesB(route):
         # successful paths
         paths = []
 
-        # check if we already visisted a small cave twice
-        tally = Counter([c for c in route if c.islower() and c not in ['start','end']]).values()
+        # get list of all possible next caves
+        # first, check if we already visisted a small cave twice
+        tally = Counter([c for c in route if c.islower()]).values()
         if(len(tally) == 0 or max(tally) > 1):
             
-            # get list of all possible next caves
-            next_ = [c[1] for c in connections if c[0] == route[-1] and (c[1].isupper() or c[1] not in route)]
+            # already visisted a small cave twice
+            next_ = [c for c in connections[route[-1]] if c.isupper() or c not in route]
 
         else:
             
-            # get list of all possible next caves
-            next_ = [c[1] for c in connections if c[0] == route[-1] and c[1] != 'start']
+            # not yet visited a small cave twice
+            next_ = connections[route[-1]]
 
         # enter, then exit every next cave (backtracking)
         for n in next_:
