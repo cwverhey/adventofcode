@@ -575,3 +575,130 @@ for l in lines:
 
 answer = statistics.median(scores)
 print('answer 10b:', answer)
+
+#
+# Day 12: Passage Pathing
+#
+
+# get input by line
+input_day12 = '''start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end
+'''.split('\n')[:-1]
+
+input_day12 = '''dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc
+'''.split('\n')[:-1]
+
+input_day12 = '''fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW
+'''.split('\n')[:-1]
+
+input_day12 = get_advent(12, lines=True)
+
+# get set of cave names, eg {'start', 'end', 'A'}
+caves = set([c for line in input_day12 for c in line.split('-')])
+
+# get list of unidirectional cave connections, eg [('start','A), ('A','start'), ('end','A'), ('A','end')]
+connections = []
+for line in input_day12:
+    c = line.split('-')
+    connections.append((c[0],c[1]))
+    connections.append((c[1],c[0]))
+
+# 12a
+
+def complete_routesA(route):
+    
+    if(route[-1] == 'end'):
+        
+        # we found a complete route
+        print(route)
+        
+        # return path
+        return([route])
+        
+    else:
+        
+        # successful paths
+        paths = []
+
+        # get list of all possible next caves
+        next_ = [c[1] for c in connections if c[0] == route[-1] and (c[1].isupper() or c[1] not in route)]
+    
+        # enter, then exit every next cave (backtracking)
+        for n in next_:
+            paths += complete_routesA(route+[n])
+            
+        # return successful paths
+        return(paths)
+
+routes = complete_routesA(['start'])
+print('answer 12a:', len(routes))
+
+# 12b
+
+def complete_routesB(route):
+    
+    if(route[-1] == 'end'):
+        
+        # we found a complete route
+        # print(route)
+        
+        # return path
+        return([route])
+        
+    else:
+        
+        # successful paths
+        paths = []
+
+        # check if we already visisted a small cave twice
+        tally = Counter([c for c in route if c.islower() and c not in ['start','end']]).values()
+        if(len(tally) == 0 or max(tally) > 1):
+            
+            # get list of all possible next caves
+            next_ = [c[1] for c in connections if c[0] == route[-1] and (c[1].isupper() or c[1] not in route)]
+
+        else:
+            
+            # get list of all possible next caves
+            next_ = [c[1] for c in connections if c[0] == route[-1] and c[1] != 'start']
+
+        # enter, then exit every next cave (backtracking)
+        for n in next_:
+            paths += complete_routesB(route+[n])
+            
+        # return successful paths
+        return(paths)
+
+routes = complete_routesB(['start'])
+print('answer 12b:', len(routes))
