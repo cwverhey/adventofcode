@@ -48,7 +48,7 @@ smatch <- function(pattern, text, simple.result = F, ignore.case = F, perl = F, 
   }
   
   # set no. of matches
-  attributes(r)$matches = ncol(r)
+  attributes(r)$matches = nrow(r)
   
   # get/set start and length values
   start = attributes(r)$match.start = r[,]
@@ -367,7 +367,7 @@ folds$val = as.numeric(folds$val)
 print_points = function(points) {
   for(y in 0:max(points$y)) {
     for(x in 0:max(points$x))
-      if(sum(points$x == x & points$y == y)) cat('█') else cat('·')
+      if(sum(points$x == x & points$y == y)) cat('⬛️') else cat('⬜️')
     cat('\n')
   }
 }
