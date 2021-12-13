@@ -372,6 +372,31 @@ print_points = function(points) {
   }
 }
 
+# function to perform OCR
+# OCR
+ocr_points = function(points) {
+  
+  width = max(points$x)+3
+  height = max(points$y)+3
+  
+  mat = matrix(1,width,height)
+  
+  pngfile = tempfile()
+  png(pngfile, width=width*10, height=height*10)
+  
+  for(i in seq_len(nrow(points))) mat[ points$x[i]+2 , height - points$y[i] - 1 ] = 0
+  
+  par(mar=c(0, 0, 0, 0))
+  image(mat, axes = FALSE, col = grey(seq(0, 1, length = 256)))
+  dev.off()
+  
+  url = 'https://api.ocr.space/parse/image'
+  data = list(file = upload_file(pngfile), filetype = 'PNG', OCREngine = '2')
+  r = POST(url, add_headers(apikey='5a64d478-9c89-43d8-88e3-c65de9999580'), body = data, encode = "multipart")
+  cat(content(r)$ParsedResults[[1]]$ParsedText,'\n')
+  
+}
+
 # loop over folds
 for(fold_id in seq_len(nrow(folds))) {
   dir = folds$dir[fold_id]
@@ -392,3 +417,6 @@ for(fold_id in seq_len(nrow(folds))) {
 
 # print final result
 print_points(points)
+
+# get OCR recognition
+ocr_points(points)
