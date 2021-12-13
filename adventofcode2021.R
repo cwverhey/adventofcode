@@ -3,6 +3,9 @@ library('stringr')
 library('rbenchmark')
 library('readr')
 
+#
+# custom functions
+#
 get_advent = function(day, year = 2021, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ',', as.numeric = TRUE) {
   url = paste0('https://adventofcode.com/',year,'/day/',day,'/input')
   headers = c('cookie' = readLines("~/Progs/adventofcode/adventofcode2021-cookie.txt", w=F))
@@ -14,6 +17,54 @@ get_advent = function(day, year = 2021, raw = FALSE, trim = TRUE, split1 = '\n',
   if (!isFALSE(split2)) content = str_split(content, split2)[[1]]
   if(as.numeric) content = as.numeric(content)
   return(content)
+}
+
+smatch <- function(pattern, text, simple.result = F, ignore.case = F, perl = F, fixed = F, useBytes = F) {
+  
+  if(typeof(text) == "list") {
+    
+    if(class(text) == "data.frame")
+      return(apply(text, c(1,2), function(text_item) smatch(pattern, text_item, simple.result, ignore.case, perl, fixed, useBytes) ))
+    
+    if(class(text) == "list")
+      return(lapply(text, function(text_item) smatch(pattern, text_item, simple.result, ignore.case, perl, fixed, useBytes) ))
+    
+    stop(paste0("Don't know how to iterate over this input for `text`:", " typeof: ", typeof(text), ", mode: ", mode(text), ", class: ", class(text)))
+  }
+  
+  if(length(text) > 1) {
+    return(sapply(text, function(text_item) smatch(pattern, text_item, simple.result, ignore.case, perl, fixed, useBytes) ))
+  }
+  
+  # get gregexec result
+  regex = gregexec(pattern=pattern, text=text, ignore.case=ignore.case, perl=perl, fixed=fixed, useBytes=useBytes)
+  r = regex[[1]]
+  
+  # check for failed match
+  if(length(r) == 1 && r == -1) {
+    r[1] = attributes(r)$match.start = attributes(r)$match.length = NA
+    attributes(r)$matches = 0
+    return(r)
+  }
+  
+  # set no. of matches
+  attributes(r)$matches = ncol(r)
+  
+  # get/set start and length values
+  start = attributes(r)$match.start = r[,]
+  length = attributes(r)$match.length
+  
+  # set substrings
+  for(i in 1:length(start)) {
+    r[i] <- substr(text, start[i], start[i] + length[i] - 1)
+  }
+  
+  # return
+  if(isFALSE(simple.result))
+    return(r)
+  else
+    return(r[simple.result[1],simple.result[2]])
+  
 }
 
 #
@@ -266,3 +317,78 @@ while(flashed != nrow(mat)*ncol(mat)) {
 }
 
 cat('answer for 11b:',step,'\n')
+
+#
+# Day 13: Transparent Origami ---------------------------------------------
+#
+
+day13_input = '6,10
+0,14
+9,10
+0,3
+10,4
+4,11
+6,0
+6,12
+4,1
+0,13
+10,12
+3,4
+3,0
+8,4
+1,10
+2,14
+8,10
+9,0
+
+fold along y=7
+fold along x=5
+'
+
+day13_input = get_advent(13, 2021, raw=T)
+
+# split input in points and folds
+input = str_split(day13_input,'\n\n')[[1]]
+
+# create df of points
+points = str_split(input[1],'\n')[[1]]
+points = do.call(rbind, lapply(points, function(point) data.frame(x=str_split(point,',')[[1]][1], y=str_split(point,',')[[1]][2])))
+points$x = as.numeric(points$x)
+points$y = as.numeric(points$y)
+print(points)
+
+# create df of folding instructions
+folds = smatch('fold along (\\w)=(\\d+)',input[2])
+folds = as.data.frame(t(folds)[,c(2,3)])
+colnames(folds) = c('dir','val')
+folds$val = as.numeric(folds$val)
+
+# function to display points
+print_points = function(points) {
+  for(y in 0:max(points$y)) {
+    for(x in 0:max(points$x))
+      if(sum(points$x == x & points$y == y)) cat('█') else cat('·')
+    cat('\n')
+  }
+}
+
+# loop over folds
+for(fold_id in seq_len(nrow(folds))) {
+  dir = folds$dir[fold_id]
+  val = folds$val[fold_id]
+  
+  cat('folding over',dir,'=',val,'... ')
+  
+  # fold points
+  points[points[,dir]>val,dir] = 2*val - points[points[,dir]>val,dir]
+  
+  # remove overlapping points
+  points = unique(points)
+  
+  # print output
+  cat(nrow(points),'points remaining\n')
+  #print_points(points)
+}
+
+# print final result
+print_points(points)
