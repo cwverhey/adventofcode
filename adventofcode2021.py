@@ -19,43 +19,6 @@ def get_advent(day, numeric = False, raw = False, lines=False):
     if numeric: result = [int(x) for x in result]
     return result
 
-def leaderboard_time(ts,day):
-    
-    if day == 'today':
-        day = date.today().strftime("%-d")
-    else:
-        day = str(day)
-        
-    stampday = datetime.fromtimestamp(ts).strftime('%-d')
-    
-    if day == stampday:
-        return datetime.fromtimestamp(ts).strftime('%H:%M')
-    else:
-        return datetime.fromtimestamp(ts).strftime('%-d-%-m %H:%M')
-
-# don't call the leaderboard too often; AoC says every 15 min maximum, and this function doesn't cache it!
-def leaderboard():
-    url = 'https://adventofcode.com/2021/leaderboard/private/view/380357.json'
-    headers = {'cookie': open('/Users/caspar/Progs/adventofcode/adventofcode2021-cookie.txt', 'r').read().strip()}
-    result = requests.get(url, headers=headers).text
-    
-    data = json.loads(result)
-    
-    for member in sorted(data['members'].values(), key=lambda m: -m['local_score']):
-        print("{} (⭐️{})".format(member['name'], member['local_score']))
-        print('last activity:',leaderboard_time(member['last_star_ts'],'today'))
-        member['completion_day_level'] = {int(k):v for k,v in member['completion_day_level'].items()}
-        for lvl,times in sorted(member['completion_day_level'].items()):
-            print(f'day {lvl:02}:',end=' ')
-            for part,time in sorted(times.items()):
-                print(leaderboard_time(time['get_star_ts'],lvl), end=' ')
-                if part == '1' and len(times) == 2: print('/', end=' ')
-            if len(times) == 2: print('(∆t {}min)'.format(int((times['2']['get_star_ts']-times['1']['get_star_ts'])/60)), end=' ')
-            print()
-        print()
-    
-leaderboard()
-
 #
 # Day 1: Sonar Sweep
 #
@@ -703,3 +666,135 @@ def complete_routesB(route):
 
 routes = complete_routesB(['start'])
 print('answer 12b:', len(routes))
+
+import timeit
+timeit.timeit(globals=globals(), stmt='print(len(complete_routesB(["start"])))', number=10)
+
+#
+# Day 14: Extended Polymerization
+#
+
+input_day14 = '''NNCB
+
+CH -> B
+HH -> N
+CB -> H
+NH -> C
+HB -> C
+HC -> B
+HN -> C
+NN -> C
+BH -> H
+NC -> B
+NB -> B
+BN -> B
+BB -> N
+BC -> B
+CC -> N
+CN -> C
+'''.strip().split('\n')
+
+input_day14 = get_advent(14, lines=True)
+
+# process input into `template` and `rules`
+input = input_day14
+template = input.pop(0)
+input.pop(0)
+rules = {x[0]:x[0][0]+x[1]+x[0][1] for x in [x.split(' -> ') for x in input]}
+
+#
+# 14a
+#
+
+# take one iteration of inserting values between all pairs
+def insert_step(in_):
+    out = ''
+    for i in range(len(in_)-1):
+        #print('pair:',in_[i:i+2])
+        out += rules[in_[i:i+2]][:-1]
+    out += in_[i+1]
+    return out
+
+# take 10 steps
+polymer = template
+for i in range(10):
+    polymer = insert_step(polymer)
+    #print(polymer)
+    
+len(polymer)
+
+# tally
+tally = Counter(polymer)
+
+# print answer
+answer = max(tally.values())-min(tally.values())
+print('answer 14a:', answer)
+
+#
+# 14b
+#
+
+# sum values of 2 dicts: {'A':12, 'B':5} + {'C':3, 'A':6} = {'A':18, 'B':5, 'C':3 }
+def sum_dicts(x, y):
+    return {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
+
+# get a tally for the entire tree under a given string, up to a given depth
+# requires `rules` to contain all pair insertion rules
+def get_tally(template, goal_depth, verbose = True):
+    
+    # function to calc tally of (tree under) (sub)pattern (recurses)
+    def get_subpattern_tally(pattern, goal_depth, curr_depth, verbose):
+        
+        nonlocal tally_cache
+    
+        if verbose: print('\t'*curr_depth, pattern, sep='')
+    
+        # return tally of pattern if we're deep enough, except last letter: it will be counted with next subpattern
+        if(goal_depth == curr_depth): return Counter(pattern[:-1])
+    
+        # init new subtally
+        tallies = {}
+        
+        # add tallies from all subpairs
+        for i in range(len(pattern)-1):
+            next
+            subpattern = rules[ pattern[i:i+2] ]
+            
+            try:
+                subtally = tally_cache[curr_depth][subpattern]
+                
+            except KeyError:
+                subtally = get_subpattern_tally(subpattern, goal_depth, curr_depth+1, verbose)
+                tally_cache[curr_depth][subpattern] = subtally
+                
+            if verbose: print('\t'*(curr_depth+1),subtally, sep='')
+            tallies = sum_dicts(tallies, subtally)
+        
+        # return subtally
+        return tallies
+    
+    # init cache for solved tallies (avoids recursing into subpatterns we've done before)
+    tally_cache = {i:{} for i in range(goal_depth+1)}
+    
+    # get tallies recursively
+    tallies = get_subpattern_tally(template, goal_depth, 0, verbose)
+    
+    # add last character from template to tally (to avoid double counting, the last letter of subpatterns isn't counted)
+    tallies = sum_dicts(tallies, {template[-1]:1})
+    
+    # return final tally
+    return tallies
+
+# run cached recursive tally function and get answer
+tally = get_tally(template, 40, verbose=False)
+answer = max(tally.values())-min(tally.values())
+print('answer 14b:', answer)
+
+# time
+def time():
+    tally = get_tally(template, 40, verbose=False)
+    answer = max(tally.values())-min(tally.values())
+    print('answer 14b:', answer)
+    
+import timeit
+timeit.timeit(globals=globals(), stmt='time()', number=1000)
