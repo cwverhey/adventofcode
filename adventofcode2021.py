@@ -740,7 +740,7 @@ def sum_dicts(x, y):
 
 # get a tally for the entire tree under a given string, up to a given depth
 # requires `rules` to contain all pair insertion rules
-def get_tally(template, goal_depth, verbose = True):
+def get_tally(template, rules, goal_depth, verbose = True):
     
     # function to calc tally of (tree under) (sub)pattern (recurses)
     def get_subpattern_tally(pattern, goal_depth, curr_depth, verbose):
@@ -757,7 +757,7 @@ def get_tally(template, goal_depth, verbose = True):
         
         # add tallies from all subpairs
         for i in range(len(pattern)-1):
-            next
+            
             subpattern = rules[ pattern[i:i+2] ]
             
             try:
@@ -785,14 +785,15 @@ def get_tally(template, goal_depth, verbose = True):
     # return final tally
     return tallies
 
+
 # run cached recursive tally function and get answer
-tally = get_tally(template, 40, verbose=False)
+tally = get_tally(template, rules, 40, verbose=False)
 answer = max(tally.values())-min(tally.values())
 print('answer 14b:', answer)
 
 # time
 def time():
-    tally = get_tally(template, 40, verbose=False)
+    tally = get_tally(template, rules, 40, verbose=False)
     answer = max(tally.values())-min(tally.values())
     print('answer 14b:', answer)
     
