@@ -556,3 +556,65 @@ while(T) {
 # print answer
 cat('answer for 15b:',lowest_risk[rows,cols],'\n')
 
+#
+# 15b, take 2 (after recommendation from HarmtH to use heap, much faster)
+#
+
+# real input
+day15_input = get_advent(15, 2021, split2=F, a=F)
+
+# load lib
+#install.packages("collections")
+library("collections")
+
+get_safest_path = function(input, task_b=F) {
+  
+  # parse input to map matrix
+  map = do.call(rbind,lapply(input, function(x) as.numeric(str_split(x, '')[[1]])))
+  if(task_b) {
+    map = cbind(map,map+1,map+2,map+3,map+4)
+    map = rbind(map,map+1,map+2,map+3,map+4)
+    map[map>9] = map[map>9] - 9
+  }
+  
+  # init dimension parameters (I guess it's faster to get them once than to lookup each time)
+  cols = ncol(map)
+  rows = nrow(map)
+  
+  # initialize cumulative risk path matrix
+  lowest_risk = matrix(nrow=rows, ncol=cols)
+  
+  # initialize task queue
+  tasks = priority_queue()
+  
+  # function to safely set the lowest path risk to a specified cell to specified risk `approach_risk` + entering malus from `map`, and add a task to look further from this cell - but only if the cell exists and doesn't have a risk yet
+  add_lowest_risk = function(approach_risk, x, y) {
+    if(x < 1 || x > rows || y < 1 || y > cols || !is.na(lowest_risk[x,y])) return()
+    newrisk = approach_risk + map[x,y]
+    lowest_risk[x,y] <<- newrisk
+    tasks$push(c(newrisk, x, y), priority = -(newrisk))
+  }
+  
+  # setup for start
+  lowest_risk[1,1] = 0
+  tasks$push(c(0,1,1), priority = 0)
+  
+  # expand from lowest risk unexpanded cells until bottom right is reached
+  while(is.na(lowest_risk[rows,cols])) {
+    task = tasks$pop()
+    add_lowest_risk(task[1], task[2]-1, task[3])
+    add_lowest_risk(task[1], task[2]+1, task[3])
+    add_lowest_risk(task[1], task[2], task[3]-1)
+    add_lowest_risk(task[1], task[2], task[3]+1)
+  }
+  
+  # print answer
+  if(task_b) cat('answer for 15b:',lowest_risk[rows,cols],'\n')
+  else cat('answer for 15a:',lowest_risk[rows,cols],'\n')
+  
+}
+
+b = benchmark('day15a'=get_safest_path(day15_input), 'day15b'=get_safest_path(day15_input, task_b = T), replications = 10)
+b
+b$elapsed / b$replications * 1000 # ms per iteration
+
