@@ -697,7 +697,7 @@ CN -> C
 input_day14 = get_advent(14, lines=True)
 
 # process input into `template` and `rules`
-input = input_day14
+input = input_day14.copy()
 template = input.pop(0)
 input.pop(0)
 rules = {x[0]:x[0][0]+x[1]+x[0][1] for x in [x.split(' -> ') for x in input]}
@@ -798,4 +798,82 @@ def time():
     print('answer 14b:', answer)
     
 import timeit
-timeit.timeit(globals=globals(), stmt='time()', number=1000)
+timeit.timeit(globals=globals(), stmt='time()', number=10)
+
+
+#
+# 14b, take 2 (after seeing Apie's solution)
+#
+
+def get_tally(input_lines, depth, verbosity=0):
+        
+    # load template and rules
+    # ex. template: 'NNCB'
+    # ex. rules2D: {'NS': ['NP', 'PS'], 'KV': ['KB', 'BV']}
+    input = input_lines.copy()
+    template = input.pop(0)
+    input.pop(0)
+    rules2D = {x[0]:[x[0][0]+x[1], x[1]+x[0][1]] for x in [x.split(' -> ') for x in input]}
+    if verbosity > 0: print(f'polymer template: {template}\n')
+    if verbosity > 1: print(f'pair insertion rules: {rules2D}\n')
+
+    # tally how often each pair occurs
+    pair_tally = Counter([template[i:i+2] for i in range(len(template)-1)])
+    if verbosity > 1: print(f'initial pair_tally: {pair_tally}\n')
+    
+    # loop, to expand each pair into two new pairs
+    for n in range(1,depth+1):
+        new_pair_tally = Counter()
+        for pair,count in pair_tally.items():
+            if verbosity > 2: print("{0} * {1} = {0} * {2} + {0} * {3}".format(count, pair, rules2D[pair][0], rules2D[pair][1] ))
+            new_pair_tally[rules2D[pair][0]] += count
+            new_pair_tally[rules2D[pair][1]] += count
+        pair_tally = new_pair_tally
+        if verbosity > 1: print(f'pair_tally after {n} iterations: {new_pair_tally}\n')
+
+    # count how often each letter occurs as the first item in a pair + last letter in pattern
+    letter_tally = Counter({template[-1:]:1})
+    for pair,count in pair_tally.items():
+        letter_tally[pair[0]] += count
+    if verbosity > 0: print(f'letter_tally: {letter_tally}\n')
+
+    # calculate answer
+    answer = max(letter_tally.values()) - min(letter_tally.values())
+    if verbosity > -1: print(f'answer 14b: {answer}')
+
+    # return
+    return letter_tally
+
+input_day14 = get_advent(14, lines=True)
+get_tally(input_day14, 40)
+
+import timeit
+timeit.timeit(globals=globals(), stmt='get_tally_skinny(input_day14, 40)', number=1000)
+
+#
+# 14b, take 2b (speeding things up a tiny bit more)
+#
+
+def get_tally_skinny(input_lines, depth):
+    input = input_lines.copy()
+    template = input.pop(0)
+    input.pop(0)
+    rules2D = {x[0]:[x[0][0]+x[1], x[1]+x[0][1]] for x in [x.split(' -> ') for x in input]}
+    pair_tally = Counter([template[i:i+2] for i in range(len(template)-1)])
+    for n in range(1,depth+1):
+        new_pair_tally = Counter()
+        for pair,count in pair_tally.items():
+            new_pair_tally[rules2D[pair][0]] += count
+            new_pair_tally[rules2D[pair][1]] += count
+        pair_tally = new_pair_tally
+    letter_tally = Counter({template[-1:]:1})
+    for pair,count in pair_tally.items():
+        letter_tally[pair[0]] += count
+    return max(letter_tally.values()) - min(letter_tally.values())
+
+input_day14 = get_advent(14, lines=True)
+get_tally_skinny(input_day14, 40)
+
+import timeit
+timeit.timeit(globals=globals(), stmt='get_tally_skinny(input_day14, 40)', number=1000)
+
