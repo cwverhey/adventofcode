@@ -877,3 +877,54 @@ get_tally_skinny(input_day14, 40)
 import timeit
 timeit.timeit(globals=globals(), stmt='get_tally_skinny(input_day14, 40)', number=1000)
 
+#
+# Day 15: Chiton
+#
+
+import heapq
+
+input_day15 = get_advent(15, lines=True)
+
+def get_safest_path(input):
+    
+    # load input: map of risk per position
+    risks = np.array([np.array([int(n) for n in line]) for line in input])
+    risks = np.concatenate((risks, risks+1, risks+2, risks+3, risks+4), axis=1)
+    risks = np.concatenate((risks, risks+1, risks+2, risks+3, risks+4), axis=0)
+    risks = np.where(risks > 9, risks - 9, risks)
+    
+    # store optimal risk per cell
+    opt_riskpath = np.full_like(risks, -1)
+    
+    # task heap queue of cells to expand
+    tasks = []
+    
+    # add cell to task queue and set its risk in opt_riskpath
+    def add_lowest_risk(previous_risk, x, y):
+        if x < 0 or y < 0: return
+        try:
+            if opt_riskpath[x,y] == -1:
+                lowest_risk = previous_risk + risks[x,y]
+                opt_riskpath[x,y] = lowest_risk
+                heapq.heappush(tasks, (lowest_risk,x,y))
+        except:
+            pass
+        
+    # setup for start
+    opt_riskpath[0,0] = 0
+    heapq.heappush(tasks, (0,0,0)) # risk: 0, x: 0, y: 0
+    
+    # run queue until final cell reached
+    while opt_riskpath[-1,-1] == -1:
+        risk,x,y = heapq.heappop(tasks)
+        add_lowest_risk(risk, x-1, y)
+        add_lowest_risk(risk, x+1, y)
+        add_lowest_risk(risk, x, y-1)
+        add_lowest_risk(risk, x, y+1)
+    
+    print('answer 15b:',opt_riskpath[-1,-1])
+
+get_safest_path(input_day15)
+
+import timeit
+timeit.timeit(globals=globals(), stmt='get_safest_path(input_day15)', number=10)
