@@ -72,7 +72,7 @@ $json = json_decode($json, true);
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>AoC Leaderboard <?php echo $board; ?></title>
+	<title>Advent of Code Leaderboard #<?php echo $board; ?></title>
 	<style>
 		html, body {margin: 0px; padding: 0px;}
 		.mtime {font-family: monospace; position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px;}
@@ -101,7 +101,9 @@ $json = json_decode($json, true);
 	<noscript><input type="submit" value="go"></noscript>
 	</form><br />
 	
-	last update: <?php echo leaderboard_time($data_age, 'today');?>
+	last update: <?php echo leaderboard_time($data_age, 'today');?><br />
+	<a href='https://adventofcode.com/<?php echo $year;?>/leaderboard/private/view/<?php echo $board;?>'>AoC page</a>
+	
 	
 </div>
 
@@ -132,7 +134,7 @@ if($json) {
 				print_r(leaderboard_time($time['get_star_ts'],$day));
 				if($part == 1 && count($parts) > 1) print(' / ');
 			}
-			if(count($parts) > 1) print(" <span class='dt'>∆t ".intval(($parts[2]['get_star_ts']-$parts[1]['get_star_ts'])/60).'min</span>');
+			if(count($parts) > 1) print(" <span class='dt'>∆t ".round(($parts[2]['get_star_ts']-$parts[1]['get_star_ts'])/60).'min</span>');
 		}
 		print("</div>\n");
 	}
