@@ -380,12 +380,10 @@ ocr_points = function(points) {
   height = max(points$y)+3
   
   mat = matrix(1,width,height)
+  for(i in seq_len(nrow(points))) mat[ points$x[i]+2 , height - points$y[i] - 1 ] = 0
   
   pngfile = tempfile()
   png(pngfile, width=width*10, height=height*10)
-  
-  for(i in seq_len(nrow(points))) mat[ points$x[i]+2 , height - points$y[i] - 1 ] = 0
-  
   par(mar=c(0, 0, 0, 0))
   image(mat, axes = FALSE, col = grey(seq(0, 1, length = 256)))
   dev.off()
@@ -420,3 +418,141 @@ print_points(points)
 
 # get OCR recognition
 ocr_points(points)
+
+#
+# Day 15: Chiton ----------------------------------------------------------
+#
+
+#
+# 15a
+#
+
+# function to safely set the path length to a specified cell, to a specified value + entering malus, if the cell exists and doesn't have a shorter path yet
+set_path_to = function(x, y, value) {
+  if(x < 1 || x > cols || y < 1 || y > rows) return()
+  new_path_length = map[x,y] + value
+  if(is.na(shortest_path[x,y]) || shortest_path[x,y] > new_path_length) shortest_path[x,y] <<- new_path_length
+}
+
+# example input
+day15_input = str_split(str_trim('1163751742
+1381373672
+2136511328
+3694931569
+7463417111
+1319128137
+1359912421
+3125421639
+1293138521
+2311944581
+'),'\n')[[1]]
+
+# real input
+day15_input = get_advent(15, 2021, split2=F, a=F)
+
+# parse input to map matrix
+map = do.call(rbind,lapply(day15_input, function(x) as.numeric(str_split(x, '')[[1]])))
+
+# initialize shortest_path matrix
+shortest_path = matrix(nrow=nrow(map), ncol=ncol(map))
+shortest_path[1,1] = 0
+
+# init dimension parameters (I guess it's faster to get them once than to lookup each time)
+cols = ncol(map)
+rows = nrow(map)
+
+# loop until the state stops changing
+while(T) {
+  
+  # store current state, so we can see if the state changed
+  old_paths = shortest_path
+  
+  # loop over all cells in matrix
+  for(x in seq_len(rows)) for(y in seq_len(cols)) {
+    if(!is.na(shortest_path[x,y])) {
+      # set adjacent cells to path length to current cell + entering malus, but only if their current value isn't bigger already
+      set_path_to(x-1, y, shortest_path[x,y])
+      set_path_to(x+1, y, shortest_path[x,y])
+      set_path_to(x, y-1, shortest_path[x,y])
+      set_path_to(x, y+1, shortest_path[x,y])
+    }
+  }
+  
+  # did the state change?
+  if(isTRUE(sum(shortest_path == old_paths) == cols*rows)) { break }
+  
+}
+
+# print answer
+cat('answer for 15a:',shortest_path[rows,cols],'\n')
+
+#
+# 15b
+#
+
+# example input
+day15_input = str_split(str_trim('1163751742
+1381373672
+2136511328
+3694931569
+7463417111
+1319128137
+1359912421
+3125421639
+1293138521
+2311944581
+'),'\n')[[1]]
+
+# real input
+day15_input = get_advent(15, 2021, split2=F, a=F)
+
+# function to safely set the lowest path risk to a specified cell to specified risk `approach_risk` + entering malus from `map`, and add a task to look further from this cell - but only if the cell exists and doesn't have a risk yet
+add_lowest_risk = function(approach_risk, x, y) {
+  if(x < 1 || x > rows || y < 1 || y > cols || !is.na(lowest_risk[x,y])) return()
+  lowest_risk[x,y] <<- approach_risk + map[x,y]
+  tasks[nrow(tasks) + 1,] <<- c(approach_risk + map[x,y], x, y)
+  return()
+}
+
+# parse input to map matrix
+map = do.call(rbind,lapply(day15_input, function(x) as.numeric(str_split(x, '')[[1]])))
+map = cbind(map,map+1,map+2,map+3,map+4)
+map = rbind(map,map+1,map+2,map+3,map+4)
+map[map>9] = map[map>9] - 9
+
+# init dimension parameters (I guess it's faster to get them once than to lookup each time)
+cols = ncol(map)
+rows = nrow(map)
+
+# initialize shortest_path matrix
+lowest_risk = matrix(nrow=rows, ncol=cols)
+lowest_risk[1,1] = 0
+
+# initialize task list with cell [1,1]
+tasks = data.frame(risk=c(0), x=c(1), y=c(1))
+
+# expand from lowest risk unexpanded cells until bottom right is reached
+while(T) {
+  
+  # extract current task (rows with lowest risk) from task list
+  next_item = tasks$risk == min(tasks$risk)
+  task = tasks[next_item,]
+  tasks = tasks[!next_item,]
+  
+  # iterate over rows in current task
+  for(i in seq_len(nrow(task))) {
+    # set adjacent cells to their risk value and add them to tasklist
+    add_lowest_risk(task$risk[i], task$x[i]-1, task$y[i])
+    add_lowest_risk(task$risk[i], task$x[i]+1, task$y[i])
+    add_lowest_risk(task$risk[i], task$x[i], task$y[i]-1)
+    add_lowest_risk(task$risk[i], task$x[i], task$y[i]+1)
+  }
+  
+  # check if we are ready
+  if(!is.na(lowest_risk[rows,cols])) break
+  
+}
+
+# print answer
+cat('answer for 15b:',lowest_risk[rows,cols],'\n')
+
