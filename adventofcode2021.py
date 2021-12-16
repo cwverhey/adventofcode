@@ -928,3 +928,119 @@ get_safest_path(input_day15)
 
 import timeit
 timeit.timeit(globals=globals(), stmt='get_safest_path(input_day15)', number=10)
+
+#
+# Day 16: Packet Decoder
+#
+
+def binlist2int(binlist):
+    retval = 0
+    for e in binlist:
+        retval = (retval << 1) | e
+    return retval
+
+# input: list of ints eg [0,1,1,1,0,1,1,0], or string of hexadecimals eg "DE4DB33F" (if hexstr is set)
+# full_ret: return full list of parameters instead of just the result
+# verbosity: 0/1/2
+# hexstr: input is string of hex values
+def get_packet(input, full_ret=False, verbosity=0, hexstr=True):
+    
+    if hexstr:
+        input = [int(c) for l in input for c in "{0:04b}".format(int(l,16))]
+        
+    def poptop(num):
+        nonlocal input
+        retval = input[:num]
+        input = input[num:]
+        return retval
+    
+    # packet header
+    v = binlist2int(poptop(3))
+    v_cum = v
+    t = binlist2int(poptop(3)) # 4 = literal value, not 4: operator
+    
+    # packet body
+    if t == 4:
+        
+        # literal value
+        
+        last_group = [1]
+        number = []
+        while last_group == [1]:
+            last_group = poptop(1)
+            number += poptop(4)
+        value = binlist2int(number)
+        value_type = 'literal'
+        result = value
+        
+    else:
+        
+        # operator
+        
+        results = [] # container for numbers to operate on  
+        
+        if poptop(1) == [0]:
+            # next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet
+            total_length_of_subpackets = binlist2int(poptop(15))
+            value = poptop(total_length_of_subpackets) # get subpackets
+            value_type = 'subpackets_by_length'
+            
+            sub_input = value
+            while len(sub_input) > 7:
+                result = get_packet(sub_input, True, verbosity, False)
+                results.append(result['result'])
+                v_cum += result['v_cum']
+                sub_input = result['remaining_input']
+            
+        else:
+            # next 11 bits are a number that represents the number of sub-packets immediately contained by this packet
+            value = binlist2int(poptop(11))
+            value_type = 'subpackets_by_number'
+            
+            for i in range(value):
+                result = get_packet(input, True, verbosity, False)
+                results.append(result['result'])
+                v_cum += result['v_cum']
+                input = result['remaining_input']
+                
+        # perform operation
+        operations = ['sum(r)', 'np.prod(r)', 'min(r)', 'max(r)', '(ノಠ益ಠ)ノ彡┻━┻', 'int(r[0] > r[1])', 'int(r[0] < r[1])', 'int(r[0] == r[1])']
+        r = results
+        result = eval(operations[t])
+        
+    retval = {'v':v, 'v_cum':v_cum, 't':t, 'type':value_type, 'value':value, 'remaining_input': input, 'result': result}
+    
+    if verbosity == 1: print({k:v for k,v in retval.items() if not (k == 'remaining_input' or (k == 'value' and t != 4))})
+    if verbosity > 1: print(retval)
+    
+    if full_ret: return retval
+    else: return retval['result']
+        
+# test inputs
+get_packet('D2FE28', full_ret=True)
+get_packet('38006F45291200')
+get_packet('EE00D40C823060')
+get_packet('8A004A801A8002F478')
+get_packet('620080001611562C8802118E34')
+get_packet('C0015000016115A2E0802F182340')
+get_packet('A0016C880162017C3686B18A3D4780')
+
+get_packet('C200B40A82') # 3
+get_packet('04005AC33890') # 54
+get_packet('880086C3E88112') # 7
+get_packet('CE00C43D881120') # 9
+get_packet('D8005AC2A8F0') # 1  
+get_packet('F600BC2D8F', verbosity = 1) # 0
+get_packet('9C005AC2F8F0', verbosity = 2) # 0
+get_packet('9C0141080250320F1802104A08') # 1
+
+# real input
+input_day16 = get_advent(16)[0]
+answer = get_packet(input_day16, full_ret=True)
+print('answer 15a:',answer['v_cum'])
+print('answer 15b:',answer['result'])
+
+# time it
+import timeit
+timeit.timeit(globals=globals(), stmt='get_packet(input_day16)', number=1000)
+
