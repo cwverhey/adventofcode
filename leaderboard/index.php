@@ -12,27 +12,44 @@ if(isset($_GET['year']))
 else
 	$year = 2021;
 
-$max_age = 15 * 60; # 15 minutes in seconds
+$userpages = array( 379312 => "https://github.com/EagleErwin/AdventOfCode/tree/master/$year",
+			  	    380357 => "https://github.com/HarmtH/aoc/tree/master/$year",
+				    380677 => "https://github.com/apie/advent-of-code/tree/master/$year",
+				   1616236 => "https://github.com/cwverhey/adventofcode",
+				   1838848 => "https://github.com/leonschenk/codeofadvent");
+
+$max_age = 10 * 60; # 10 minutes in seconds
 
 $cachefile = "cache/$board-$year.json";
 
 $years = range(intval(date('Y'))-1, 2015, -1);
 if(date('m') == '12') array_unshift($years, intval(date('Y')));
 
+$days = range(1,25);
+if($year == date('Y') && date('j') <= 25) {
+	if(date('G') >= 6) $days = range(1, date('j'));
+	else $days = range(1, date('j')-1);
+}
+
+
 # function to print terse date/timestamps
 function leaderboard_time($ts, $day) {
+	
+	global $year;
 
-	if($ts == 0) return('-');
+	if($ts == 0)
+		return('-');
 
-    if($day == 'today')
+    if($day == 'today') 
         $day = date('j');
         
-    $tsday = date('j',$ts);
-    
-    if($day == $tsday)
+    if(date('j-n-Y',$ts) == $day+'12'+$year)
         return date('H:i',$ts);
-	else
-        return date('j-m H:i',$ts);
+	
+    if(date('Y',$ts) == $year)
+		return date('j-n H:i',$ts);
+    
+	return date('j-n-Y H:i',$ts);
 
 }
 
@@ -75,16 +92,18 @@ $json = json_decode($json, true);
 	<title>Advent of Code Leaderboard #<?php echo $board; ?></title>
 	<style>
 		html, body {margin: 0px; padding: 0px;}
-		.mtime {font-family: monospace; position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px;}
+		.mtime {font-family: monospace; position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px; line-height: 150%;}
 		.member {white-space: pre; font-family: monospace; margin: 16pt; padding: 0px;}
 		.name {font-weight: bold;}
+		.lastact {line-height: 200%;}
 		.dt {color: #AAA;}
 		.yearform {display: inline; font-family: monospace;}
 		#year {font-family: monospace;}
+		a {color: #000; text-decoration-style: dotted; text-decoration-color: #BBB;}
 	</style>
 </head>
 <body>
-	
+
 <div class='mtime'>
 	
 	year: <form action='' class='yearform'>
@@ -102,7 +121,7 @@ $json = json_decode($json, true);
 	</form><br />
 	
 	last update: <?php echo leaderboard_time($data_age, 'today');?><br />
-	<a href='https://adventofcode.com/<?php echo $year;?>/leaderboard/private/view/<?php echo $board;?>'>AoC page</a>
+	<a href='https://adventofcode.com/<?php echo $year; ?>/leaderboard/private/view/<?php echo $board; ?>'>AoC page</a>
 	
 	
 </div>
@@ -123,18 +142,31 @@ if($json) {
 
 	foreach($json['members'] as $member) {
 		print("<div class='member'>");
-		print("<span class='name'>$member[name]</span> ⭐️$member[stars] 🏅$member[local_score]\n");
-		print("last activity: ".leaderboard_time($member['last_star_ts'],'today'));
+		if(array_key_exists($member['id'],$userpages))
+			print("<span class='name'><a href='".$userpages[$member['id']]."' target='_blank'>$member[name]</a></span> ⭐️$member[stars] 🏅$member[local_score]\n");
+		else
+			print("<span class='name'>$member[name]</span> ⭐️$member[stars] 🏅$member[local_score]\n");
+			
+		print("<span class='lastact'>last activity: ".leaderboard_time($member['last_star_ts'],'today')."</span>");
 	
 		ksort($member['completion_day_level']);
-		foreach($member['completion_day_level'] as $day=>$parts) {
+		
+		foreach($days as $day) {
 			print("\nday ".str_pad($day,2,"0", STR_PAD_LEFT).": ");
-			ksort($parts);
-			foreach($parts as $part=>$time) {
-				print_r(leaderboard_time($time['get_star_ts'],$day));
-				if($part == 1 && count($parts) > 1) print(' / ');
+			
+			if(array_key_exists($day, $member['completion_day_level'])) {
+				$parts = $member['completion_day_level'][$day];
+				ksort($parts);
+				foreach($parts as $part=>$time) {
+					print_r(leaderboard_time($time['get_star_ts'],$day));
+					if($part == 1) print(' / ');
+					if(count($parts) == 1) print('-');
+				}
+				if(count($parts) > 1) print(" <span class='dt'>∆t ".round(($parts[2]['get_star_ts']-$parts[1]['get_star_ts'])/60).'min</span>');
+				
+			} else {
+				print('-');
 			}
-			if(count($parts) > 1) print(" <span class='dt'>∆t ".round(($parts[2]['get_star_ts']-$parts[1]['get_star_ts'])/60).'min</span>');
 		}
 		print("</div>\n");
 	}
