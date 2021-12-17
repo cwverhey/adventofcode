@@ -1037,10 +1037,161 @@ get_packet('9C0141080250320F1802104A08') # 1
 # real input
 input_day16 = get_advent(16)[0]
 answer = get_packet(input_day16, full_ret=True)
-print('answer 15a:',answer['v_cum'])
-print('answer 15b:',answer['result'])
+print('answer 16a:',answer['v_cum'])
+print('answer 16b:',answer['result'])
 
 # time it
 import timeit
 timeit.timeit(globals=globals(), stmt='get_packet(input_day16)', number=1000)
+
+#
+# Day 17: Trick Shot
+#
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+#
+# part 1
+#
+
+# find best initial velocity for y
+def find_best_y(target, max_y):
+    
+    for y in range(max_y,target[2],-1):
+        
+        print(y,end='… ')
+        
+        pos = 0
+        vel = y
+        peak_pos = 0
+        
+        while pos > target[2]:
+            
+            pos  += vel
+            vel  -= 1
+            if vel == 0: peak_pos = pos
+            #print(f'initial velocity: {y}, position: {pos}, velocity: {vel}')
+            
+            if pos >= target[2] and pos <= target[3]:
+                print(f'initial velocity {y} hit target at y={pos}, peak: {peak_pos}')
+                return(y,peak_pos)
+                
+    return(False,False)
+
+target = [135,155,-102,-78] # x_min, x_max, y_min, y_max
+answer = find_best_y(target, 1000)
+print('answer 17a:',answer[1])
+
+#
+# part 2
+#
+
+# find valid initial x velocity values that will end up in target x-range
+# initial x velocity will always be > 0 and <= target x_max
+def find_all_valid_x(target):
+    
+    valid_x = []
+    
+    for x in range(1,target[1]+1):
+        
+        pos = 0
+        vel = x
+        
+        while pos <= target[1] and vel > 0:
+            pos += vel
+            vel -= 1
+            
+            if pos >= target[0] and pos <= target[1]:
+                valid_x.append(x)
+                break
+    
+    return valid_x
+
+def find_all_valid_y(target, max_y):
+    
+    valid_y = []
+    
+    for y in range(target[2], max_y+1):
+        
+        pos = 0
+        vel = y
+        
+        while pos > target[2]:
+            pos += vel
+            vel -= 1
+            
+            if pos >= target[2] and pos <= target[3]:
+                valid_y.append(y)
+                break
+
+    return valid_y
+
+def try_probe(x_velocity, y_velocity, target, plot=True):
+    
+    probe = [0, 0, x_velocity, y_velocity]
+    
+    if plot: coords = [[],[]]
+    else: coords = False
+    
+    def draw_plot():
+        
+        fig, ax = plt.subplots()
+        ax.plot(coords[0], coords[1], '-o', color='black')
+        ax.add_patch(patches.Rectangle((target[0]-.5, target[2]-.5), target[1]-target[0]+1, target[3]-target[2]+1, linewidth=1, edgecolor='r', facecolor='none'))
+        plt.show()
+    while(1):
+        
+        # move probe one step
+        probe[0] += probe[2] # x position
+        probe[1] += probe[3] # y position
+        probe[2] -= np.sign(probe[2]) # x velocity
+        probe[3] -= 1 # y velocity
+        
+        if plot: coords[0].append(probe[0]); coords[1].append(probe[1])
+    
+        # check if we're inside target
+        if probe[0] >= target[0] and probe[0] <= target[1] and probe[1] >= target[2] and probe[1] <= target[3]:
+            if plot: draw_plot()
+            return (True, probe, coords)
+        
+        # check if we're past target
+        if probe[0] > target[1] or probe[1] <= target[2]:
+            if plot: draw_plot()
+            return (False, probe, coords)
+
+# examples
+target = [20,30,-10,-5] # x_min, x_max, y_min, y_max
+
+try_probe(7, 2, target)
+try_probe(6, 3, target)
+try_probe(9, 0, target)
+try_probe(17, -4, target)
+try_probe(0, 0, target)
+try_probe(-1, -1, target)
+try_probe(6, 9, target)
+
+# real task
+def task17b():
+
+    target = [135,155,-102,-78] # x_min, x_max, y_min, y_max
+
+    valid_x = find_all_valid_x(target)
+    valid_y = find_all_valid_y(target, 101)
+    
+    success = 0
+    for x in valid_x:
+        for y in valid_y:
+            result = try_probe(x, y, target, plot=False)
+            if result[0]:
+                success += 1
+    
+    answer = success
+    print('answer 17b:',answer)
+
+task17b()
+
+# time it
+import timeit
+timeit.timeit(globals=globals(), stmt='task17b()', number=100)/100 # seconds per run
 
