@@ -1073,7 +1073,7 @@ def find_best_y(target, max_y):
             if vel == 0: peak_pos = pos
             #print(f'initial velocity: {y}, position: {pos}, velocity: {vel}')
             
-            if pos >= target[2] and pos <= target[3]:
+            if target[2] <= pos <= target[3]:
                 print(f'initial velocity {y} hit target at y={pos}, peak: {peak_pos}')
                 return(y,peak_pos)
                 
@@ -1102,7 +1102,7 @@ def find_all_valid_x(target):
             pos += vel
             vel -= 1
             
-            if pos >= target[0] and pos <= target[1]:
+            if target[0] <= pos <= target[1]:
                 valid_x.append(x)
                 break
     
@@ -1121,17 +1121,17 @@ def find_all_valid_y(target, max_y):
             pos += vel
             vel -= 1
             
-            if pos >= target[2] and pos <= target[3]:
+            if target[2] <= pos <= target[3]:
                 valid_y.append(y)
                 break
 
     return valid_y
 
-def try_probe(x_velocity, y_velocity, target, plot=True):
+def try_probe(x_velocity, y_velocity, target, plot=True, get_coords=False):
     
     probe = [0, 0, x_velocity, y_velocity]
     
-    if plot: coords = [[],[]]
+    if plot or get_coords: coords = [[0],[0]]
     else: coords = False
     
     def draw_plot():
@@ -1140,6 +1140,7 @@ def try_probe(x_velocity, y_velocity, target, plot=True):
         ax.plot(coords[0], coords[1], '-o', color='black')
         ax.add_patch(patches.Rectangle((target[0]-.5, target[2]-.5), target[1]-target[0]+1, target[3]-target[2]+1, linewidth=1, edgecolor='r', facecolor='none'))
         plt.show()
+        
     while(1):
         
         # move probe one step
@@ -1148,17 +1149,17 @@ def try_probe(x_velocity, y_velocity, target, plot=True):
         probe[2] -= np.sign(probe[2]) # x velocity
         probe[3] -= 1 # y velocity
         
-        if plot: coords[0].append(probe[0]); coords[1].append(probe[1])
+        if coords: coords[0].append(probe[0]); coords[1].append(probe[1])
     
         # check if we're inside target
-        if probe[0] >= target[0] and probe[0] <= target[1] and probe[1] >= target[2] and probe[1] <= target[3]:
+        if target[0] <= probe[0] <= target[1] and target[2] <= probe[1] <= target[3]:
             if plot: draw_plot()
-            return (True, probe, coords)
+            return (True, probe, coords if get_coords else False)
         
         # check if we're past target
         if probe[0] > target[1] or probe[1] <= target[2]:
             if plot: draw_plot()
-            return (False, probe, coords)
+            return (False, probe, coords if get_coords else False)
 
 # examples
 target = [20,30,-10,-5] # x_min, x_max, y_min, y_max
@@ -1172,24 +1173,40 @@ try_probe(-1, -1, target)
 try_probe(6, 9, target)
 
 # real task
-def task17b():
+target = [135,155,-102,-78] # x_min, x_max, y_min, y_max
 
-    target = [135,155,-102,-78] # x_min, x_max, y_min, y_max
+def task17b(target):
 
     valid_x = find_all_valid_x(target)
     valid_y = find_all_valid_y(target, 101)
     
-    success = 0
+    successes = []
     for x in valid_x:
         for y in valid_y:
             result = try_probe(x, y, target, plot=False)
             if result[0]:
-                success += 1
+                successes.append([x,y])
     
-    answer = success
+    answer = len(successes)
     print('answer 17b:',answer)
+    return successes
 
-task17b()
+_ = task17b(target)
+
+# get nice picture
+good = task17b(target)
+
+fig = plt.figure(figsize=(10, 20))
+fig.set_dpi(600)
+ax = fig.add_subplot()
+
+for x,y in good:
+    coords = try_probe(x, y, target, plot=False, get_coords=True)[2]
+    ax.plot(coords[0], coords[1], '-o', color='black', linewidth=.1, markersize=.1, alpha=.2)
+
+ax.add_patch(patches.Rectangle((target[0]-.5, target[2]-.5), target[1]-target[0]+1, target[3]-target[2]+1, linewidth=.75, edgecolor='r', facecolor='none', zorder=2, alpha=0.75))
+
+plt.show()
 
 # time it
 import timeit
