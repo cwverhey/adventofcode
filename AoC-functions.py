@@ -11,12 +11,12 @@ import timeit
 os.chdir(WD)
 print("~~ Good luck today! ~~")
 
-def getAoC(day, year = 2021, example = 0, delHTML = True, strip = True, lines = True, asInt = True, raw = False, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt')):
+def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, asInt = True, raw = False, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt')):
     
     if raw: delHTML = strip = lines = asInt = False
     
     # load JSON file
-    filename = f'AoC_task_{year}_{day}.json'
+    filename = f'tasks/AoC_task_{year}_{day}.json'
     try:
         with open(filename, "r") as file:
             data = json.load(file)
@@ -50,7 +50,7 @@ def getAoC(day, year = 2021, example = 0, delHTML = True, strip = True, lines = 
     return {'real':real, 'example':ex}
 
 
-def downloadAoC(day, year = 2021, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt'), ret = False):
+def downloadAoC(day, year, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt'), ret = False):
     
     # real task
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
@@ -63,7 +63,7 @@ def downloadAoC(day, year = 2021, cookiefile = os.path.expanduser('~/.config/adv
     examples = re.findall('<pre><code>(.*?)<\/code><\/pre>', result, re.DOTALL)
     
     # save JSON file
-    filename = f'AoC_task_{year}_{day}.json'
+    filename = f'tasks/AoC_task_{year}_{day}.json'
     with open(filename, "x") as file:
         json.dump({'real':real, 'examples':examples}, file, indent=4)
     
