@@ -41,7 +41,7 @@ def getAoC(day, year = 2021, example = 0, delHTML = True, strip = True, lines = 
     if strip: r = [x.strip() for x in r]
     if lines: r = [x.split('\n') for x in r]
     if asInt:
-        try:    r = [int(x) for x in r]
+        try:    r = [[int(x) for x in l] for l in r]
         except: pass
     if isinstance(example, int): ex = r[0]
     else:                        ex = r
