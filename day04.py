@@ -3,8 +3,11 @@
 
 # Day 4: Giant Squid
 
-WD = '/Users/caspar/Progs/adventofcode/'
-exec(open(f'{WD}/AoC-functions.py').read())
+try:
+    exec(open('AoC-functions.py').read())
+except (NameError,FileNotFoundError):
+    PATH = '/Users/caspar/Progs/adventofcode/'
+    exec(open(f'{PATH}/AoC-functions.py').read())
 
 task = getAoC(4, 2021)
 task['example']

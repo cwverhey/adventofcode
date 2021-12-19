@@ -3,10 +3,13 @@
 
 # Day 18: Snailfish
 
-WD = '/Users/caspar/Progs/adventofcode/'
-exec(open(f'{WD}/AoC-functions.py').read())
+try:
+    exec(open('AoC-functions.py').read())
+except (NameError,FileNotFoundError):
+    PATH = '/Users/caspar/Progs/adventofcode/'
+    exec(open(f'{PATH}/AoC-functions.py').read())
 
-task = getAoC(18, example='all')
+task = getAoC(18, 2021, example='all')
 task['example']
 task['real']
 
