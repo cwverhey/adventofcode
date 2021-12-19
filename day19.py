@@ -224,7 +224,7 @@ def task19b(task, verbose=False):
     print('answer 19b:',maxdistance)
 
 #task19b(task['example'][5]) # 3621
-#task19b(task['real']) #
+#task19b(task['real']) # 12201
 
 
 # benchmark
