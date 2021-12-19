@@ -8,91 +8,13 @@ from collections import Counter
 
 def get_advent(day, numeric = False, raw = False, lines=False):
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
-    headers = {'cookie': open('/Users/caspar/Progs/adventofcode/adventofcode2021-cookie.txt', 'r').read().strip()}
+    headers = {'cookie': open('/Users/caspar/.config/adventofcode2021-cookie.txt', 'r').read().strip()}
     result = requests.get(url, headers=headers).text
     if raw: return result
     if lines: return result.split('\n')[:-1]
     result = result.split()
     if numeric: result = [int(x) for x in result]
     return result
-
-#
-# Day 6: Lanternfish
-#
-
-#
-# 6a
-#
-
-#fish = [3,4,3,1,2] # example data
-
-input = get_advent(6)
-fish = [int(x) for x in input[0].split(',')]
-
-
-for d in range(1, 80+1):
-    
-    fish = [x - 1 for x in fish] # decrease all fish age by 1
-    fish += [8]*fish.count(-1) # add new fish as 8
-    fish = [6 if x == -1 else x for x in fish] # reset fish with -1 days to 6
-    answer = len(fish)
-    if d == 80: print('after {} days: {} fish'.format(d, answer))
-    
-
-#
-# 6b
-#
-
-import numpy as np
-
-def day6_np(raw_input):
-    
-    fish = [3,4,3,1,2]
-    fish = [int(x) for x in input.strip().split(',')]
-    
-    tally = Counter(fish)
-    tally = np.array([np.array(x) for x in tally.items()]).T # age / count
-    
-    for day in range(1, 256+1):
-        
-        newfish = 0
-        tally[0] -= 1 # decrease all fish age by 1
-        
-        for x in np.where(tally[0] == -1)[0]: # find columns where age is now -1
-            newfish += tally[1,x] # remember to add this many new fish
-            tally[0,x] = 6 # reset fish with -1 days to 6
-        if newfish:
-            newfish = np.array([[8],[newfish]]) # create column for new fish
-            tally = np.hstack((tally,newfish)) # add new fish to tally
-            
-        if day in [80,256]:
-           print('after {} days: {} fish'.format(day, sum(tally[1])))
-    
-        
-def day6_list(raw_input):
-    
-    fish = [3,4,3,1,2] # example
-    fish = [int(x) for x in input.strip().split(',')]
-    
-    tally = [fish.count(x) for x in range(0,8+1)]
-    
-    for day in range(1, 256+1):
-        new = tally[0]  # remember how many fish will give birth
-    
-        tally.pop(0)    # shift all tallies 1 day down
-        tally[6] += new # add fish that gave birth
-        tally.insert(8, new)  # add newborn fish
-    
-        if day in [80,256]:
-           print('after {} days: {} fish'.format(day, sum(tally)))
-
-input = get_advent(6, raw=True)
-day6_np(input)
-day6_list(input)
-
-import timeit
-timeit.timeit(globals=globals(), stmt='day6_np(input)', number=5)*1000
-timeit.timeit(globals=globals(), stmt='day6_list(input)', number=5)*1000
 
 #
 # Day 8: Seven Segment Search
