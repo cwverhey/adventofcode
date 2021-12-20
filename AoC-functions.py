@@ -8,7 +8,11 @@ import json
 import os
 import timeit
 
-os.chdir(WD)
+try:
+    os.chdir(PATH)
+except:
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    
 print("~~ Good luck today! ~~")
 
 def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, asInt = True, raw = False, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt')):
@@ -51,6 +55,8 @@ def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, a
 
 
 def downloadAoC(day, year, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt'), ret = False):
+    
+    print('downloading puzzle input...')
     
     # real task
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
