@@ -83,43 +83,44 @@ def quantumDieOutcomeBuilder():
 def getAllNextStates(worlds, player, dice, verbose=True):
 
     if verbose:
-        print('  s0 s1 p0 p1  *')
         print(worlds)
         print()
 
     # repeat lists to get length: worlds * dice outcomes
-    newstates = np.vstack([worlds] * len(dice[0]))
+    df = pd.concat([worlds] * len(dice[0]), ignore_index=True)
     die_values = np.repeat(dice[0], len(worlds))
     die_occurrences = np.repeat(dice[1], len(worlds))
 
-    # move player to new position
-    newstates[:,player+2] += die_values
-    newstates[:,player+2] = newstates[:,player+2] % 10
-
-    # add position to score
-    newstates[:,player] += newstates[:,player+2] + 1
+    if player == 0:
+        df.p0 += die_values  # move player to new position
+        df.p0 = df.p0 % 10
+        df.s0 += df.p0 + 1   # add position to score
+    else:
+        df.p1 += die_values  # move player to new position
+        df.p1 = df.p1 % 10
+        df.s1 += df.p1 + 1   # add position to score
 
     # multiply occurences
-    newstates[:,4] *= die_occurrences
+    df.freq *= die_occurrences
 
     # merge identical states
-    df = pd.DataFrame(newstates)
-    df = df.groupby([0,1,2,3], as_index=False).agg(satan=(4, sum))
-    unique = np.array(df)
+    df = df.groupby(['s0','s1','p0','p1'], as_index=False).agg(freq=('freq', sum))
 
-    if verbose: print(unique)
+    if verbose: print(df)
 
-    return unique
+    return df
 
 
 def solveQuantumDie(task, threshold=21, verbose=False):
 
     #quantumworlds = np.array([[0,0,0,0,1]]); threshold = 15; verbose = True
+    #quantumworlds = pd.DataFrame([[0,0,0,0,1]], columns=['s0','s1','p0','p1','freq'])
+    #quantumworlds = pd.DataFrame([[0,0,0,0,1],[0,1,0,1,1]], columns=['s0','s1','p0','p1','freq'])
 
     startposition = parse_task(task)
 
     dieoutcomes = quantumDieOutcomeBuilder()
-    quantumworlds = np.array([[0, 0, startposition[0], startposition[1], 1]])  # score0, score1, pos0, pos1, occurrences
+    quantumworlds = pd.DataFrame([[0, 0, startposition[0], startposition[1], 1]], columns=['s0','s1','p0','p1','freq'])
     playersturn = 0
     wins = [0,0]
 
@@ -129,9 +130,13 @@ def solveQuantumDie(task, threshold=21, verbose=False):
         quantumworlds = getAllNextStates(quantumworlds, playersturn, dieoutcomes, verbose)
 
         # get how many times this player has won, remove those games
-        won_universes = quantumworlds[:,playersturn] >= threshold
-        wins[playersturn] += np.sum(quantumworlds[won_universes, 4])
-        quantumworlds = quantumworlds[~won_universes]
+        if playersturn == 0:
+            won_universes = quantumworlds.s0 >= threshold
+        else:
+            won_universes = quantumworlds.s1 >= threshold
+
+        wins[playersturn] += quantumworlds.freq[won_universes].sum()
+        quantumworlds.drop(quantumworlds[won_universes].index, inplace=True)
 
         # check how many quantumworlds haven't finished yet
         if verbose: print('universes left:',len(quantumworlds))
@@ -156,5 +161,5 @@ def task21b(task, verbose=False):
 # task21b(task['real'], verbose=False)  # 274291038026362
 
 # benchmark
-#benchmark("task21a(task['real'])", 100)
+benchmark("task21a(task['real'])", 100)
 benchmark("task21b(task['real'])", 10)
