@@ -12,13 +12,13 @@ try:
     os.chdir(PATH)
 except:
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    
+
 print("~~ Good luck today! ~~")
 
 def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, asInt = True, raw = False, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt')):
-    
+
     if raw: delHTML = strip = lines = asInt = False
-    
+
     # load JSON file
     filename = f'tasks/AoC_task_{year}_{day}.json'
     try:
@@ -26,7 +26,7 @@ def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, a
             data = json.load(file)
     except FileNotFoundError:
         data = downloadAoC(day, year, cookiefile, True)
-    
+
     # real task
     real = data['real']
     if strip: real = real.strip()
@@ -34,9 +34,9 @@ def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, a
     if asInt:
         try:
             if lines: real = [int(x) for x in real]
-            else:     real = int(real) 
+            else:     real = int(real)
         except: pass
-    
+
     # examples
     r = data['examples']
     if isinstance(example, int): r = [r[example]]
@@ -49,30 +49,31 @@ def getAoC(day, year, example = 0, delHTML = True, strip = True, lines = True, a
         except: pass
     if isinstance(example, int): ex = r[0]
     else:                        ex = r
-    
+
     # return
     return {'real':real, 'example':ex}
 
 
 def downloadAoC(day, year, cookiefile = os.path.expanduser('~/.config/adventofcode2021-cookie.txt'), ret = False):
-    
+
     print('downloading puzzle input...')
-    
+
     # real task
     url = 'https://adventofcode.com/2021/day/{}/input'.format(day)
     headers = {'cookie': open(cookiefile, 'r').read().strip()}
     real = requests.get(url, headers=headers).text
-    
+
     # examples: get all data inside a <pre><code>
     url = 'https://adventofcode.com/{}/day/{}'.format(year, day)
-    result = requests.get(url).text
+    headers = {'cookie': open(cookiefile, 'r').read().strip()}
+    result = requests.get(url, headers=headers).text
     examples = re.findall('<pre><code>(.*?)<\/code><\/pre>', result, re.DOTALL)
-    
+
     # save JSON file
     filename = f'tasks/AoC_task_{year}_{day}.json'
     with open(filename, "x") as file:
         json.dump({'real':real, 'examples':examples}, file, indent=4)
-    
+
     # return
     if ret: return({'real':real, 'examples':examples})
 
