@@ -131,7 +131,7 @@ def print_cave(board=False):
                 cell = CAVE[row][col]
                 if cell == '#':
                     text += '███'
-                elif cell == -1:
+                elif cell == -1 or cell == ' ':
                     text += '   '
                 else:
                     text += lut[board[cell]]
@@ -146,9 +146,9 @@ def p(cost,board):
     print('cost =',cost, flush=False)
     print(flush=True)
 
-# print_cave()
-# print_cave(board)
-# p([0],board)
+#print_cave()
+#print_cave(board)
+#p(0,board)
 
 
 #
