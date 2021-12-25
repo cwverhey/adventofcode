@@ -1,6 +1,14 @@
+
 <?php
 
-$cookiefile = dirname($_SERVER['DOCUMENT_ROOT'],2)."/storage/adventofcode2021-cookie.txt";
+# load options/variables
+if ($_SERVER['HTTP_HOST'] == '192.168.1.2') {
+	$cookiefile = "/home/caspar/.config/adventofcodecookie.txt";
+	$max_age = 1000 * 60;
+} else {
+	$cookiefile = dirname($_SERVER['DOCUMENT_ROOT'],2)."/storage/adventofcode2021-cookie.txt";
+	$max_age = 10 * 60;
+}
 
 if(isset($_GET['id']))
 	$board = intval($_GET['id']);
@@ -17,8 +25,6 @@ $userpages = array( 379312 => "https://github.com/EagleErwin/AdventOfCode/tree/m
 				    380677 => "https://github.com/apie/advent-of-code/tree/master/$year",
 				   1616236 => "https://github.com/cwverhey/adventofcode",
 				   1838848 => "https://github.com/leonschenk/codeofadvent");
-
-$max_age = 10 * 60; # 10 minutes in seconds
 
 $cachefile = "cache/$board-$year.json";
 
@@ -40,18 +46,39 @@ function leaderboard_time($ts, $day) {
 	if($ts == 0)
 		return('-');
 
-    if($day == 'today') 
+    if($day == 'today')
         $day = date('j');
+	
+	$title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
         
-    if(date('j-n-Y',$ts) == $day+'12'+$year)
-        return date('H:i',$ts);
+    if(date('j-n-Y',$ts) == $day.'-12-'.$year)
+        return $title.date('H:i',$ts).'</span>';
 	
     if(date('Y',$ts) == $year)
-		return date('j-n H:i',$ts);
+		return $title.date('d-m',$ts).'</span>';
     
-	return date('j-n-Y H:i',$ts);
+	return $title.date('d-m-Y',$ts).'</span>';
 
 }
+
+
+# function to print delta t
+function dt($time1, $time2) {
+	
+	$dt = $time2 - $time1;
+	
+	if ($dt < 99.5) $str = $dt.'s';
+	
+	else if ($dt < 99.5 * 60) $str = round($dt/60).'m';
+	
+	else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'H';
+	
+	else $str = round($dt/(60*60*24)).'D';
+	
+	return str_pad($str, 3, ' ', STR_PAD_LEFT);
+		
+}
+
 
 # get latest version from AoC and save cachefile
 if(!file_exists($cachefile) || filemtime($cachefile) < time() - $max_age) {
@@ -83,6 +110,32 @@ if(!file_exists($cachefile) || filemtime($cachefile) < time() - $max_age) {
 
 $json = json_decode($json, true);
 
+
+# group users into df by stars
+$df = array();
+foreach($json['members'] as $m) {
+	
+	# remove a level of depth in time-array
+	foreach ($m['completion_day_level'] as $d => $v) {
+		foreach ($v as $p => $s)
+			$m['completion_day_level'][$d][$p] = $m['completion_day_level'][$d][$p]['get_star_ts'];
+		ksort($m['completion_day_level'][$d]);
+	}
+	
+	# sort time-array
+	ksort($m['completion_day_level']);
+		
+	# set member in df	
+	$df[$m['stars']][] = $m;
+}
+
+# sort df
+foreach($df as $stars => $v) {
+	shuffle($v);
+	$df[$stars] = $v;
+}
+krsort($df);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,15 +144,22 @@ $json = json_decode($json, true);
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Advent of Code Leaderboard #<?php echo $board; ?></title>
 	<style>
-		html, body {margin: 0px; padding: 0px;}
-		.mtime {font-family: monospace; position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px; line-height: 150%;}
-		.member {white-space: pre; font-family: monospace; margin: 16pt; padding: 0px;}
+		
+		html, body {margin: 0px; padding: 0px; font-family: monospace;}
+		a {color: #000; text-decoration-style: dotted; text-decoration-color: #BBB;}
+		
+		.mtime {position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px; line-height: 150%;}
+		.yearform {display: inline;}
+		#year {font-family: monospace;}
+		
+		.row {white-space: pre; padding-left: 50pt; clear: left;}
+		.stars {padding: 10pt; width: 40pt; font-size: 300%; text-align: center; position: absolute; left: 0;}
+		.user {float: left; padding: 10pt; }
+		
 		.name {font-weight: bold;}
 		.lastact {line-height: 200%;}
 		.dt {color: #AAA;}
-		.yearform {display: inline; font-family: monospace;}
-		#year {font-family: monospace;}
-		a {color: #000; text-decoration-style: dotted; text-decoration-color: #BBB;}
+		
 	</style>
 </head>
 <body>
@@ -128,52 +188,51 @@ $json = json_decode($json, true);
 
 <?php
 
-if($json) {
-
-	usort($json['members'], function ($a, $b) {
-		if($a['stars'] < $b['stars']) return 1;
-		if($a['stars'] > $b['stars']) return -1;
+foreach($df as $stars => $users) {
 	
-		if($a['local_score'] < $b['local_score']) return 1;
-		if($a['local_score'] > $b['local_score']) return -1;
+	print("<div class='row'>\n");
+	print("<div class='stars'>⭐️<br />$stars</div>");
 	
-		return -1 * ($a['name'] <=> $b['name']);
-	});
-
-	foreach($json['members'] as $member) {
-		print("<div class='member'>");
-		if(array_key_exists($member['id'],$userpages))
-			print("<span class='name'><a href='".$userpages[$member['id']]."' target='_blank'>$member[name]</a></span> ⭐️$member[stars] 🏅$member[local_score]\n");
-		else
-			print("<span class='name'>$member[name]</span> ⭐️$member[stars] 🏅$member[local_score]\n");
-			
-		print("<span class='lastact'>last activity: ".leaderboard_time($member['last_star_ts'],'today')."</span>");
-	
-		ksort($member['completion_day_level']);
+	foreach($users as $user) {
 		
+		print('<div class="user">');
+		
+		print('<span class="name">');
+		if(array_key_exists($user['id'],$userpages))
+			print("<a href='".$userpages[$user['id']]."' target='_blank'>$user[name]</a>");
+		else
+			print($user['name']);
+		print("</span> 🏅$user[local_score]\n");
+			
+		print("<span class='lastact'>last activity: ".leaderboard_time($user['last_star_ts'],'today')."</span>");
+	
 		foreach($days as $day) {
 			print("\nday ".str_pad($day,2,"0", STR_PAD_LEFT).": ");
 			
-			if(array_key_exists($day, $member['completion_day_level'])) {
-				$parts = $member['completion_day_level'][$day];
-				ksort($parts);
-				foreach($parts as $part=>$time) {
-					print_r(leaderboard_time($time['get_star_ts'],$day));
-					if($part == 1) print(' / ');
-					if(count($parts) == 1) print('-');
+			if(array_key_exists($day, $user['completion_day_level'])) {
+				print(leaderboard_time($user['completion_day_level'][$day][1],$day));
+				print(' / ');
+				if(count($user['completion_day_level'][$day]) == 2) {
+					print(leaderboard_time($user['completion_day_level'][$day][2],$day));
+					print(' <span class="dt"> ∆ '.dt($user['completion_day_level'][$day][1],$user['completion_day_level'][$day][2]).'</span>');
+				} else {
+					print('-');
 				}
-				if(count($parts) > 1) print(" <span class='dt'>∆t ".round(($parts[2]['get_star_ts']-$parts[1]['get_star_ts'])/60).'min</span>');
-				
 			} else {
 				print('-');
 			}
 		}
-		print("</div>\n");
+		print("</div>");
+		
+		
+		
 	}
-
-} else {
-	print("Failed to retrieve leaderboard for board id=$board, year=$year");
+	
+	print("</div>\n\n");
 }
+
+#print("Failed to retrieve leaderboard for board id=$board, year=$year");
+
 ?>
 </body>
 </html>
