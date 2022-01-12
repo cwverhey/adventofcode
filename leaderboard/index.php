@@ -3,10 +3,10 @@
 
 # load options/variables
 if ($_SERVER['HTTP_HOST'] == '192.168.1.2') {
-	$cookiefile = "/home/caspar/.config/adventofcodecookie.txt";
+	$cookiefile = "/home/caspar/.config/adventofcode-cookie.txt";
 	$max_age = 1000 * 60;
 } else {
-	$cookiefile = dirname($_SERVER['DOCUMENT_ROOT'],2)."/storage/adventofcode2021-cookie.txt";
+	$cookiefile = dirname($_SERVER['DOCUMENT_ROOT'],2)."/storage/adventofcode-cookie.txt";
 	$max_age = 10 * 60;
 }
 
@@ -62,6 +62,22 @@ function leaderboard_time($ts, $day) {
 }
 
 
+# function to print terse date/timestamps for last update
+function last_update_time($ts) {
+	
+	if($ts == 0)
+		return('-');
+    
+	$title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+        
+    if(date('j-n-Y',$ts) == date('j-n-Y'))
+        return $title.date('H:i',$ts).'</span>';
+	
+	return $title.date('d-m-Y H:i',$ts).'</span>';
+
+}
+
+
 # function to print delta t
 function dt($time1, $time2) {
 	
@@ -81,6 +97,7 @@ function dt($time1, $time2) {
 
 
 # get latest version from AoC and save cachefile
+$data_time = 0;
 if(!file_exists($cachefile) || filemtime($cachefile) < time() - $max_age) {
 	
     $url = "https://adventofcode.com/$year/leaderboard/private/view/$board.json";
@@ -97,15 +114,17 @@ if(!file_exists($cachefile) || filemtime($cachefile) < time() - $max_age) {
 	
 	curl_close($ch);
 	
-	if(count(json_decode($json, true)) > 0) file_put_contents($cachefile, $json);
+	if(!empty(json_decode($json, true))) {
+		file_put_contents($cachefile, $json);
+		$data_time = time();
+	}
 	
-	$data_age = time();
-	
-} else {
+}
+
+if($data_time == 0) {
 	
 	$json = file_get_contents($cachefile);
-	
-	$data_age = filemtime($cachefile);
+	$data_time = filemtime($cachefile);
 }
 
 $json = json_decode($json, true);
@@ -180,7 +199,7 @@ krsort($df);
 	<noscript><input type="submit" value="go"></noscript>
 	</form><br />
 	
-	last update: <?php echo leaderboard_time($data_age, 'today');?><br />
+	last update: <?php echo last_update_time($data_time);?><br />
 	<a href='https://adventofcode.com/<?php echo $year; ?>/leaderboard/private/view/<?php echo $board; ?>'>AoC page</a>
 	
 	
