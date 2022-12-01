@@ -1,6 +1,6 @@
 # Sys.setenv(AOC_COOKIE = 'foobarbazaa25d42de5b45e5ea75d5068ae3aa572be6b1a79f6bcd6a3e1a78056cfd9')
 
-Sys.setenv(AOC_COOKIE = readLines('~/Documents/AoCkey.txt'))
+Sys.setenv(AOC_COOKIE = strsplit(readLines('~/.config/adventofcode-cookie.txt'), '=')[[1]][2])
 
 library('httr')
 library('xml2')
