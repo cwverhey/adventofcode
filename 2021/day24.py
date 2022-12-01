@@ -105,7 +105,7 @@ def task24a(task, verbose=False):
 
     print('answer 24a:',answer)
 
-# task24a(tasks['real'], verbose=True)  # 59692994994998
+#task24a(tasks['real'], verbose=True)  # 59692994994998
 
 
 def task24b(task, verbose=False):
@@ -119,7 +119,7 @@ def task24b(task, verbose=False):
 
     print('answer 24b:', answer)
 
-# task24b(tasks['real'], verbose=True)  # 16181111641521
+#task24b(tasks['real'], verbose=True)  # 16181111641521
 
 
 # benchmark

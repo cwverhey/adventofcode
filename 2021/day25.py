@@ -75,4 +75,4 @@ def task25a(task, verbose=False):
 
 
 # benchmark
-benchmark("task25a(tasks['real'])", 10)
+benchmark("task25a(tasks['real'])", 25)

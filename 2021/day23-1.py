@@ -252,4 +252,5 @@ def task23a(joblist, verbose=False):
 # task23a(task['real'])  # 16506
 
 # benchmark
+benchmark("task23a(task['example'])", 1)
 benchmark("task23a(task['real'])", 1)

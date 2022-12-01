@@ -8,7 +8,7 @@ library('readr')
 #
 get_advent = function(day, year = 2021, raw = FALSE, trim = TRUE, split1 = '\n', split2 = ',', as.numeric = TRUE) {
   url = paste0('https://adventofcode.com/',year,'/day/',day,'/input')
-  headers = c('cookie' = readLines("~/Progs/adventofcode/adventofcode2021-cookie.txt", w=F))
+  headers = c('cookie' = readLines("~/.cache/adventofcode2021-cookie.txt", w=F))
   r = GET(url, add_headers(headers))
   content = content(r)
   if(raw) return(content)

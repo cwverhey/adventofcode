@@ -17,18 +17,22 @@ else
 
 if(isset($_GET['year']))
 	$year = intval($_GET['year']);
-else
-	$year = 2021;
+else {
+	if(date('Y') < 10)
+		$year = date('Y') - 1;
+	else
+		$year = date('Y');
+}
 
 $userpages = array( 379312 => "https://github.com/EagleErwin/AdventOfCode/tree/master/$year",
 			  	    380357 => "https://github.com/HarmtH/aoc/tree/master/$year",
 				    380677 => "https://github.com/apie/advent-of-code/tree/master/$year",
-				   1616236 => "https://github.com/cwverhey/adventofcode",
-				   1838848 => "https://github.com/leonschenk/codeofadvent");
+				   1616236 => "https://github.com/cwverhey/adventofcode/tree/main/$year",
+				   1838848 => "https://github.com/leonschenk/advent22");
 
 $cachefile = "cache/$board-$year.json";
 
-$years = range(intval(date('Y'))-1, 2015, -1);
+$years = range(date('Y')-1, 2015, -1);
 if(date('m') == '12') array_unshift($years, intval(date('Y')));
 
 $days = range(1,25);
@@ -167,11 +171,11 @@ krsort($df);
 		html, body {margin: 0px; padding: 0px; font-family: monospace;}
 		a {color: #000; text-decoration-style: dotted; text-decoration-color: #BBB;}
 		
-		.mtime {position: fixed; top: 0px; right: 0px; margin: 16pt; padding: 0px; line-height: 150%;}
+		.mtime {position: fixed; top: 0px; right: 0px; margin: 8pt; padding: 8pt; line-height: 150%; background-color: rgba(255, 255, 255, 0.8);}
 		.yearform {display: inline;}
 		#year {font-family: monospace;}
 		
-		.row {white-space: pre; padding-left: 50pt; clear: left;}
+		.row {white-space: pre; padding-left: 50pt; padding-right: 100pt; clear: left;}
 		.stars {padding: 10pt; width: 40pt; font-size: 300%; text-align: center; position: absolute; left: 0;}
 		.user {float: left; padding: 10pt; }
 		
