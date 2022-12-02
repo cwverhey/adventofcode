@@ -55,3 +55,10 @@ points_outcomes <- scoring_outcome[ games ]
 answer <- sum(points_shapes) + sum(points_outcomes)
 
 submit(answer, year, day, part)
+
+
+# git push ----------------------------------------------------------------
+
+system(sprintf('git add "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
+system(sprintf('git commit -m "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
+system('git push')
