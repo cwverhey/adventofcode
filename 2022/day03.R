@@ -13,7 +13,7 @@ task(year, day, part)
 src <- input(year, day, splitlines = T)
 
 letterValues <- 1:52
-names(letterValues) <- c(letters[1:26],LETTERS[1:26])
+names(letterValues) <- c(letters, LETTERS)
 
 overlapValues <- sapply(src, \(x) {
   x <- strsplit(x, '', T)[[1]]
