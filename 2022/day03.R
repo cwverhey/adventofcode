@@ -36,7 +36,7 @@ task(year, day, part)
 elfGroups <- split(src, rep(seq(length(src)/3), each = 3))
 
 overlapValues <- sapply(elfGroups, \(x) {
-  x <- strsplit(x, '')
+  x <- strsplit(x, '', T)
   overlap <- intersect(intersect(x[[1]], x[[2]]), x[[3]])
   return(letterValues[overlap])
 })
