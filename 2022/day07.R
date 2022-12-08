@@ -12,10 +12,9 @@ task(year, day, part)
 
 src <- input(year, day, splitlines = T)
 
-library("dplyr")
-
 # create data.frame with all files/dirs
-fs <- data.frame(type = "dir", path = "//", size = NA)
+files <- data.frame(path = character(0), size = numeric(0))
+dirs <- data.frame(path = "//", size = NA)
 cwd <- c()
 
 for(cmd in src) {
@@ -42,26 +41,27 @@ for(cmd in src) {
   } else {
 
     cmd <- strsplit(cmd, ' ', fixed=T)[[1]]
-
-    type <- ifelse(cmd[1] == "dir", "dir", "file")
     path <- paste(c(cwd, cmd[2]), collapse='/')
-    size <- ifelse(cmd[1] == "dir", NA, as.numeric(cmd[1]))
 
-    fs[nrow(fs) + 1,] <- list(type = type, path = path, size = size)
+    if(cmd[1] == "dir") {
+      dirs[nrow(dirs) + 1,] <- list(path = path, size = NA)
+    } else {
+      files[nrow(files) + 1,] <- list(path = path, size = as.numeric(cmd[1]))
+    }
 
   }
 }
 
 # summate sizes for dirs
-dirs <- fs$path[fs$type=="dir"]  # get all dirs
-for(dir in dirs) {
-  files <- fs[startsWith(fs$path, dir), ] |> distinct() # get all unique files
-  size <- sum(files$size, na.rm = T)
-  fs$size[fs$path == dir] <- size
+for(dir in dirs$path) {
+  dir_files <- files[startsWith(files$path, dir), ] |> distinct()  # get all unique files in dir
+  size <- sum(dir_files$size)
+  dirs$size[dirs$path == dir] <- size
 }
 
 # get answer
-answer <- fs$size[fs$type == 'dir' & fs$size <= 100000] |> sum()
+smol_dirs <- dirs[dirs$size <= 100000,] |> distinct()  # get all unique small dirs
+answer <- sum(smol_dirs$size)
 
 submit(answer, year, day, part)
 
@@ -73,11 +73,10 @@ part = 2
 task(year, day, part)
 
 # calculate required extra space
-goal <- 30000000 - (70000000 - fs$size[fs$path == '//'])
+goal <- 30000000 - (70000000 - dirs$size[dirs$path == '//'])
 
 # find smallest dir of at least size `goal`
-dirs <- fs[fs$type == 'dir' & fs$size >= goal, ]
-answer <- min(dirs$size)
+answer <- dirs$size[dirs$size >= goal] |> min()
 
 submit(answer, year, day, part)
 
