@@ -10,7 +10,7 @@ part = 1
 
 task(year, day, part)
 
-src <- input(year, day)
+src <- input(year, day, raw = T)
 
 calories <- strsplit(src, '\n\n')[[1]]
 calories <- vapply(calories,
@@ -31,3 +31,8 @@ task(year, day, part)
 answer <- calories |> sort() |> tail(n=3) |> sum()
 
 submit(answer, year, day, part)
+
+
+# git push ----------------------------------------------------------------
+
+git_push()
