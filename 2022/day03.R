@@ -10,7 +10,7 @@ part = 1
 
 task(year, day, part)
 
-src <- input(year, day, splitlines = T)
+src <- input(year, day)
 
 letterValues <- 1:52
 names(letterValues) <- c(letters, LETTERS)
@@ -48,6 +48,4 @@ submit(answer, year, day, part)
 
 # git push ----------------------------------------------------------------
 
-system(sprintf('git add "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
-system(sprintf('git commit -m "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
-system('git push')
+git_push()
