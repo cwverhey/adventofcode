@@ -10,11 +10,11 @@ part = 1
 
 task(year, day, part)
 
-src <- input(year, day, splitlines = T)
+src <- input(year, day)
 
 line <- strsplit(src, '')[[1]]
 for(i in 4:length(line)) {
-  x <- line[(i-3):i] |> unique(x) |> length()
+  x <- line[(i-3):i] |> unique() |> length()
   if(x == 4) break
 }
 
@@ -30,7 +30,7 @@ part = 2
 task(year, day, part)
 
 for(i in 14:length(line)) {
-  x <- line[(i-13):i] |> unique(x) |> length()
+  x <- line[(i-13):i] |> unique() |> length()
   if(x == 14) break
 }
 
@@ -41,6 +41,4 @@ submit(answer, year, day, part)
 
 # git push ----------------------------------------------------------------
 
-system(sprintf('git add "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
-system(sprintf('git commit -m "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
-system('git push')
+git_push()
