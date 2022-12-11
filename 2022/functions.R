@@ -13,7 +13,7 @@ task <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.ti
 
   cachefile <- sprintf('cache/task_%s_%s_%s.txt', year, day, part)
   if(file.exists(cachefile)) {
-    html <- paste(readLines(cachefile), collapse='')
+    html <- paste(readLines(cachefile), collapse='\n')
   } else {
     html <- GET(sprintf('https://adventofcode.com/%s/day/%s', year, day), set_cookies(session = Sys.getenv("AOC_COOKIE")))
     cat(as.character(content(html, encoding = 'UTF-8')), file=cachefile)
@@ -30,7 +30,7 @@ task <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.ti
 
 # input -------------------------------------------------------------------
 
-input <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.time(), "%d")), url = NULL, splitlines = FALSE) {
+input <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.time(), "%d")), url = NULL, raw = FALSE) {
 
   if(is.null(url)) {
 
@@ -38,9 +38,9 @@ input <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.t
     task_cachefile1 <- sprintf('cache/task_%s_%s_%s.txt', year, day, 1)
     task_cachefile2 <- sprintf('cache/task_%s_%s_%s.txt', year, day, 2)
     if(file.exists(task_cachefile2)) {
-      html <- paste(readLines(task_cachefile2), collapse='')
+      html <- paste(readLines(task_cachefile2), collapse='\n')
     } else if(file.exists(task_cachefile1)) {
-      html <- paste(readLines(task_cachefile1), collapse='')
+      html <- paste(readLines(task_cachefile1), collapse='\n')
     } else {
       html <- GET(sprintf('https://adventofcode.com/%s/day/%s', year, day), set_cookies(session = Sys.getenv("AOC_COOKIE")))
     }
@@ -68,7 +68,7 @@ input <- function(year = format(Sys.time(), "%Y"), day = as.numeric(format(Sys.t
 
   }
 
-  if(splitlines) {
+  if(!raw) {
     txt <- trimws(txt)
     txt <- strsplit(txt, '\n', fixed=T)[[1]]
   }
@@ -91,5 +91,18 @@ submit <- function(answer, year = format(Sys.time(), "%Y"), day = as.numeric(for
   html <- read_html(html)
 
   html |> html_element('article') |> html_text2() |> cat()
+
+}
+
+
+# git_push ----------------------------------------------------------------
+
+git_push <- function(msg = NULL) {
+
+  if(is.null(msg)) msg <- basename(rstudioapi::getSourceEditorContext()$path)
+
+  system(sprintf('git add "%s"', basename(rstudioapi::getSourceEditorContext()$path)))
+  system(sprintf('git commit -m "%s"', msg))
+  system('git push')
 
 }
