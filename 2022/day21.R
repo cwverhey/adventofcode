@@ -141,6 +141,10 @@ submit(answer, year, day, part)
 
 # part 2 - without external solving library -------------------------------
 
+part = 2
+
+task(year, day, part)
+
 src <- input(year, day, url = 'https://adventofcode.com/2022/day/21/input')
 
 # load input to tibble
@@ -228,6 +232,37 @@ if(is.numeric(sides[[2]])) {
 } else {
   answer <- simplify(sides[[2]], sides[[1]])
 }
+
+submit(answer, year, day, part)
+
+
+# part 2 - minimal code ---------------------------------------------------
+
+library('Ryacas')
+
+part = 2
+
+task(year, day, part)
+
+src <- input(year, day, url = 'https://adventofcode.com/2022/day/21/input')
+
+# load input to tibble
+data <- strsplit(src, ': ', T) |> unlist() |> matrix(ncol = 2, byrow = T)
+monkeys <- data.frame(cmd = data[,2])
+rownames(monkeys) <- data[,1]
+
+# recursively get value for a monkey by name
+getMonkey <- function(name) {
+  if(name == "humn") return("humn")
+
+  val <- strsplit(monkeys[[name, 'cmd']], ' ', T)[[1]]
+  if(length(val) == 1) return(val)
+
+  return(sprintf('(%s %s %s)', getMonkey(val[1]), val[2], getMonkey(val[3])))
+}
+
+eq <- paste(getMonkey(rootcmd[[1]][1]), '==', getMonkey(rootcmd[[1]][3]))
+answer <- solve(ysym(eq), "humn") |> stringr::str_extract('\\d+') |> as.numeric()
 
 submit(answer, year, day, part)
 
