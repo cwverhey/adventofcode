@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import helper.py
+from helper import *
 
 #
 # part 1
