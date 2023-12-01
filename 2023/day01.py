@@ -22,7 +22,7 @@ get_task(1)
 textual_numbers = {'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9'}
 
 def get_first_number(str):
-    if str[0] >= '0' and str[0] <= '9':
+    if '0' <= str[0] <= '9':
         return str[0]
     
     for k,v in textual_numbers.items():
@@ -35,7 +35,7 @@ def get_first_number(str):
     return get_first_number(str[1:])
 
 def get_last_number(str):
-    if str[-1] >= '0' and str[-1] <= '9':
+    if '0' <= str[-1] <= '9':
         return str[-1]
     
     for k,v in textual_numbers.items():
@@ -52,4 +52,4 @@ input = get_input(1)
 numbers = [ int( get_first_number(i) + get_last_number(i) ) for i in input ]
 answer = sum(numbers)
 
-submit(1, 2, answer)
+submit(1, 2, answer) # 53312
