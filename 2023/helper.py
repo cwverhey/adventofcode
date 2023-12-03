@@ -15,6 +15,7 @@ import json
 from bs4 import BeautifulSoup as bs
 import numpy as np
 from collections import Counter
+from collections import defaultdict
 import keyring
 import html2text
 
@@ -62,7 +63,9 @@ def get_task(day, year = 2023):
     r = requests.get(url, headers={'cookie': config['cookie']})
     soup = bs(r.content)
     main = soup.find('main')
-    print(html2text.html2text(str(main)))
+    text = html2text.html2text(str(main))
+    text = text.split('You can also [Shareon\n[Twitter]')[0].strip()
+    print(text)
 
 
 def get_input(day, year = 2023, numeric = False, raw = False, lines = False):
@@ -89,4 +92,5 @@ def submit(day, part, answer, year = 2023):
 
     soup = bs(r.content)
     main = soup.find('main')
-    print(html2text.html2text(str(main)))
+    text = html2text.html2text(str(main))
+    print(text)
