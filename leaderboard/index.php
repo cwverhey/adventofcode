@@ -18,7 +18,7 @@ else
 if(isset($_GET['year']))
 	$year = intval($_GET['year']);
 else {
-	if(date('Y') < 10)
+	if(date('n') < 12)
 		$year = date('Y') - 1;
 	else
 		$year = date('Y');
@@ -91,7 +91,7 @@ function dt($time1, $time2) {
 	
 	else if ($dt < 99.5 * 60) $str = round($dt/60).'m';
 	
-	else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'H';
+	else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'h';
 	
 	else $str = round($dt/(60*60*24)).'D';
 	
