@@ -41,7 +41,7 @@ if(date('m') == '12') array_unshift($years, intval(date('Y'))); // add current y
 
 $days = range(1,25);
 if($year == date('Y') && date('j') <= 25) { // limit day range if from 1-24 december:
-	if(date('G') >= 6) { // if after 6 AM local time:
+    if(date('G') >= 6) { // if after 6 AM local time:
         $days = range(1, date('j')); // include today
     } else {
         $days = range(1, date('j')-1); // exclude today
@@ -76,11 +76,11 @@ function leaderboard_time($ts, $reference_day) {
 
 # print terse date/timestamps for last cache update
 function last_update_time($ts) {
-	
-	if($ts == 0) return('-');
+
+    if($ts == 0) return('-');
     
-	$title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
-        
+    $title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+
     if(date('j-n-Y',$ts) == date('j-n-Y')) { // if $ts is today:
         return $title.date('H:i',$ts).'</span>';
     } else {
@@ -92,19 +92,19 @@ function last_update_time($ts) {
 
 # function to print delta t
 function dt($time1, $time2) {
-	
-	$dt = $time2 - $time1;
-	
-	if ($dt < 99.5) $str = $dt.'s';
-	
-	else if ($dt < 99.5 * 60) $str = round($dt/60).'m';
-	
-	else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'h';
-	
-	else $str = round($dt/(60*60*24)).'D';
-	
-	return str_pad($str, 3, ' ', STR_PAD_LEFT);
-		
+
+    $dt = $time2 - $time1;
+
+    if ($dt < 99.5) $str = $dt.'s';
+
+    else if ($dt < 99.5 * 60) $str = round($dt/60).'m';
+
+    else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'h';
+
+    else $str = round($dt/(60*60*24)).'D';
+
+    return str_pad($str, 3, ' ', STR_PAD_LEFT);
+
 }
 
 #
