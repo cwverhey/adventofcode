@@ -14,8 +14,7 @@ import os
 import json
 from bs4 import BeautifulSoup as bs
 import numpy as np
-from collections import Counter
-from collections import defaultdict
+from collections import Counter, defaultdict
 import keyring
 import html2text
 
@@ -92,5 +91,9 @@ def submit(day, part, answer, year = 2023):
 
     soup = bs(r.content)
     main = soup.find('main')
-    text = html2text.html2text(str(main))
+
+    h = html2text.HTML2Text()
+    h.ignore_links = True
+    text = h.handle(str(main))
+    text = text.split('You can [Shareon\n[Twitter]')[0].strip()
     print(text)
