@@ -14,10 +14,10 @@ import os
 import json
 from bs4 import BeautifulSoup as bs
 import numpy as np
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, deque
 import keyring
 import html2text
-
+import time
 
 AOC_LOGIN_CONFIGFILE = os.path.expanduser('~/.config/adventofcode-login.json')
 
