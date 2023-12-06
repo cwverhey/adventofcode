@@ -97,3 +97,13 @@ def submit(day, part, answer, year = 2023):
     text = h.handle(str(main))
     text = text.split('You can [Shareon\n[Twitter]')[0].strip()
     print(text)
+
+
+def flatten(lst):
+    flat_list = []
+    for row in lst:
+        flat_list += row
+    return flat_list
+
+def unique(lst):
+    return list(set(lst))
