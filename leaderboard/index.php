@@ -137,6 +137,9 @@ if ($json === false) {
     exit("ERROR: could not load leaderboard data. Change your request parameters or retry at a later time.");
 }
 $json = json_decode($json, true);
+
+# get cache file modification time
+clearstatcache();
 $data_time = filemtime($cachefile);
 
 # group users/members into df by stars
