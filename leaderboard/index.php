@@ -185,6 +185,7 @@ krsort($df);
         .mtime {position: fixed; top: 0px; right: 0px; margin: 8pt; padding: 8pt; line-height: 150%; background-color: rgba(255, 255, 255, 0.8);}
         .yearform {display: inline;}
         #year {font-family: monospace;}
+        .darkmodetoggle.light {display: none;}
 
         .row {white-space: pre; padding-left: 50pt; padding-right: 100pt; clear: left;}
         .stars {padding: 10pt; width: 40pt; font-size: 300%; text-align: center; position: absolute; left: 0;}
@@ -194,7 +195,35 @@ krsort($df);
         .lastact {line-height: 200%;}
         .dt {color: #AAA;}
 
+        body.dark {
+            color-scheme: dark;
+            color: #6f6f6f;
+            background-color: #15191d;
+            & a {color: #6f6f6f; text-decoration-color: #6f6f6f;}
+            .mtime {background-color: #15191d}
+            .dt {color: #4e4e4e;}
+            .darkmodetoggle.light {display: unset;}
+            .darkmodetoggle.dark {display: none;}
+        }
+
     </style>
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkmode', document.body.classList.contains('dark'));
+        }
+
+        window.addEventListener('load', function () {
+            if (localStorage.getItem('darkmode') === undefined) {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    localStorage.setItem('darkmode', true);
+                }
+            }
+            if (localStorage.getItem('darkmode') === 'true') {
+                toggleDarkMode();
+            }
+        });
+    </script>
 </head>
 <body>
 
@@ -217,6 +246,8 @@ krsort($df);
 
     last update: <?php echo last_update_time($data_time); ?><br />
     <a href='https://adventofcode.com/<?php echo $year; ?>/leaderboard/private/view/<?php echo $board; ?>'>AoC page</a>
+    <a href="#" onclick="toggleDarkMode('dark'); return false;" class="darkmodetoggle dark">🌖</a>
+    <a href="#" onclick="toggleDarkMode('light'); return false;" class="darkmodetoggle light">🌘️</a>
 
 </div>
 
