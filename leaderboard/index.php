@@ -61,7 +61,7 @@ function leaderboard_time($ts, $reference_day) {
 
     if($reference_day == 'today') $reference_day = date('j'); // j = day of the month without leading zeros
 
-    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'" tabindex=0>';
 
     if(date('j-n-Y',$ts) == $reference_day.'-12-'.$year) { // if $ts is on the reference day:
         $span .= date('H:i',$ts);
@@ -83,7 +83,7 @@ function last_update_time($ts) {
 
     if($ts == 0) return('-');
     
-    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'" tabindex=0>';
 
     if(date('j-n-Y',$ts) == date('j-n-Y')) { // if $ts is today:
         $span .= date('H:i',$ts);
@@ -117,7 +117,7 @@ function dt($time1, $time2) {
         $long = floor($dt/(60*60*24)).'D '.floor(($dt%(60*60*24))/(60*60)).'h '.floor(($dt%(60*60))/60).'m '.($dt%60).'s';
     }
 
-    $span = '<span class="dt" title="'.$long.'">∆ ';
+    $span = '<span class="dt" title="∆ '.$long.'" tabindex=0>∆ ';
     $span .= str_pad($short, 3, ' ', STR_PAD_LEFT);
     $span .= '</span>';
 
@@ -224,6 +224,25 @@ krsort($df);
             .darkmodetoggle.dark {display: none;}
         }
 
+        @media (pointer: coarse), (hover: none) {
+            [title] {
+                position: relative;
+                display: inline-flex;
+                justify-content: left;
+                z-index: auto;
+                line-height: 100%; 
+            }
+            [title]:focus::after {
+                content: attr(title);
+                position: absolute;
+                top: 0;
+                padding: 0;
+                margin: 0;
+                background-color: #DDD;
+                z-index: 1;
+            }
+        }
+
     </style>
     <script>
         function toggleDarkMode() {
@@ -292,7 +311,7 @@ foreach($df as $stars => $users) {
         print("<span class='lastact'>last activity: ".leaderboard_time($user['last_star_ts'],'today')."</span>");
 
         foreach($days as $day) {
-            print("\nday <a href='https://adventofcode.com/".$year."/day/".$day."'>".str_pad($day,2,"0", STR_PAD_LEFT)."</a>: ");
+            print("\nday <a href=\"https://adventofcode.com/".$year."/day/".$day."\">".str_pad($day,2,"0", STR_PAD_LEFT)."</a>: ");
             
             if(array_key_exists($day, $user['completion_day_level'])) {
                 print(leaderboard_time($user['completion_day_level'][$day][1],$day));
