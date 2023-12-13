@@ -61,15 +61,19 @@ function leaderboard_time($ts, $reference_day) {
 
     if($reference_day == 'today') $reference_day = date('j'); // j = day of the month without leading zeros
 
-    $title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
 
     if(date('j-n-Y',$ts) == $reference_day.'-12-'.$year) { // if $ts is on the reference day:
-        return $title.date('H:i',$ts).'</span>';
+        $span .= date('H:i',$ts);
     } elseif(date('Y',$ts) == $year) { // elseif $ts is in the reference year:
-        return $title.date('d-m',$ts).'</span>';
+        $span .= date('d-m',$ts);
     } else { // else:
-        return $title.date('d-m-Y',$ts).'</span>';
+        $span .= date('d-m-Y',$ts);
     }
+
+    $span .= '</span>';
+
+    return $span;
 
 }
 
@@ -79,13 +83,17 @@ function last_update_time($ts) {
 
     if($ts == 0) return('-');
     
-    $title = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
+    $span = '<span title="'.date('d-m-Y H:i:s',$ts).'">';
 
     if(date('j-n-Y',$ts) == date('j-n-Y')) { // if $ts is today:
-        return $title.date('H:i',$ts).'</span>';
+        $span .= date('H:i',$ts);
     } else {
-        return $title.date('d-m-Y H:i',$ts).'</span>';
+        $span .= date('d-m-Y H:i',$ts);
     }
+
+    $span .= '</span>';
+
+    return $span;
 
 }
 
@@ -95,15 +103,25 @@ function dt($time1, $time2) {
 
     $dt = $time2 - $time1;
 
-    if ($dt < 99.5) $str = $dt.'s';
+    if ($dt < 99.5) {
+        $short = $dt.'s';
+        $long = $dt.'s';
+    } else if ($dt < 99.5 * 60) {
+        $short = round($dt/60).'m';
+        $long = floor($dt/60).'m '.($dt%60).'s';
+    } else if ($dt < 99.5 * 60 * 48) {
+        $short = round($dt/(60*60)).'h';
+        $long = floor($dt/(60*60)).'h '.floor(($dt%(60*60))/60).'m '.($dt%60).'s';
+    } else {
+        $short = round($dt/(60*60*24)).'D';
+        $long = floor($dt/(60*60*24)).'D '.floor(($dt%(60*60*24))/(60*60)).'h '.floor(($dt%(60*60))/60).'m '.($dt%60).'s';
+    }
 
-    else if ($dt < 99.5 * 60) $str = round($dt/60).'m';
+    $span = '<span title="'.$long.'">';
+    $span .= str_pad($short, 3, ' ', STR_PAD_LEFT);
+    $span .= '</span>';
 
-    else if ($dt < 99.5 * 60 * 48) $str = round($dt/(60*60)).'h';
-
-    else $str = round($dt/(60*60*24)).'D';
-
-    return str_pad($str, 3, ' ', STR_PAD_LEFT);
+    return $span;
 
 }
 
