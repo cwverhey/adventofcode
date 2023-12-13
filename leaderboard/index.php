@@ -292,7 +292,7 @@ foreach($df as $stars => $users) {
         print("<span class='lastact'>last activity: ".leaderboard_time($user['last_star_ts'],'today')."</span>");
 
         foreach($days as $day) {
-            print("\nday ".str_pad($day,2,"0", STR_PAD_LEFT).": ");
+            print("\nday <a href='https://adventofcode.com/".$year."/day/".$day."'>".str_pad($day,2,"0", STR_PAD_LEFT)."</a>: ");
             
             if(array_key_exists($day, $user['completion_day_level'])) {
                 print(leaderboard_time($user['completion_day_level'][$day][1],$day));
