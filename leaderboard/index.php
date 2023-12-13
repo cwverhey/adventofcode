@@ -117,7 +117,7 @@ function dt($time1, $time2) {
         $long = floor($dt/(60*60*24)).'D '.floor(($dt%(60*60*24))/(60*60)).'h '.floor(($dt%(60*60))/60).'m '.($dt%60).'s';
     }
 
-    $span = '<span title="'.$long.'">';
+    $span = '<span class="dt" title="'.$long.'">∆ ';
     $span .= str_pad($short, 3, ' ', STR_PAD_LEFT);
     $span .= '</span>';
 
@@ -299,7 +299,8 @@ foreach($df as $stars => $users) {
                 print(' / ');
                 if(count($user['completion_day_level'][$day]) == 2) {
                     print(leaderboard_time($user['completion_day_level'][$day][2],$day));
-                    print(' <span class="dt"> ∆ '.dt($user['completion_day_level'][$day][1],$user['completion_day_level'][$day][2]).'</span>');
+                    print('&nbsp;&nbsp;');
+                    print(dt($user['completion_day_level'][$day][1],$user['completion_day_level'][$day][2]));
                 } else {
                     print('-');
                 }
