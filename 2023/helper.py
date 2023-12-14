@@ -19,6 +19,8 @@ from math import lcm
 import keyring
 import html2text
 import time
+from pprint import pprint
+from itertools import combinations
 
 AOC_LOGIN_CONFIGFILE = os.path.expanduser('~/.config/adventofcode-login.json')
 
