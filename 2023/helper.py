@@ -88,6 +88,8 @@ def get_input(day, year = 2023, numeric = False, raw = False, lines = False):
 
 def submit(day, part, answer, year = 2023):
 
+    print(f'Submitting {answer}:')
+
     with open(AOC_LOGIN_CONFIGFILE, 'r') as f:
         config = json.load(f)
 
