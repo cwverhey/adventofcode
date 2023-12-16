@@ -22,6 +22,7 @@ import time
 from pprint import pprint
 from itertools import combinations
 import pandas as pd
+import sys
 
 AOC_LOGIN_CONFIGFILE = os.path.expanduser('~/.config/adventofcode-login.json')
 
