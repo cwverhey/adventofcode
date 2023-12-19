@@ -23,6 +23,7 @@ from pprint import pprint
 from itertools import combinations
 import pandas as pd
 import sys
+import copy
 
 AOC_LOGIN_CONFIGFILE = os.path.expanduser('~/.config/adventofcode-login.json')
 
