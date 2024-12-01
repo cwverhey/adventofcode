@@ -8,7 +8,7 @@ import helper
 helper.update_cookie()
 
 #
-# part 1.
+# part 1
 #
 helper.get_task(day=1, year=2024)
 input = helper.get_input(day=1, year=2024, numeric=True)
