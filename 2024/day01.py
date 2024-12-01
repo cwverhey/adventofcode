@@ -3,15 +3,12 @@
 
 import sys; sys.path.append(os.path.dirname(__file__)); import aoc
 
-import os; os.chdir(os.path.expanduser('~/Progs/adventofcode/2024/'))
-import helper
-helper.update_cookie()
-
 #
 # part 1
 #
-helper.get_task(day=1, year=2024)
-input = helper.get_input(day=1, year=2024, numeric=True)
+aoc.task(2024, 1)
+aoc.examples(2024, 1)[0]
+inputs = aoc.get_input(2024, 1, numeric=True)
 
 # split into 2 lists
 lists = [[],[]]
@@ -29,12 +26,12 @@ for i,v1 in enumerate(lists[0]):
     cum_diff += abs(v1 - v2)
 
 # submit answer
-helper.submit(year=2024, day=1, part=1, answer=cum_diff)
+aoc.submit(2024, 1, 1, cum_diff)
 
 #
 # part 2
 #
-helper.get_task(year=2024, day=1)
+aoc.task(2024, 1, 2)
 
 # sum similarity score
 cum_similarity = 0
@@ -42,4 +39,4 @@ for i, v in enumerate(lists[0]):
     cum_similarity += v * lists[1].count(v)
 
 # submit answer
-helper.submit(year=2024, day=1, part=2, answer=cum_similarity)
+aoc.submit(2024, 1, 2, cum_similarity)
