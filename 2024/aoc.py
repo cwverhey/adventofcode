@@ -90,14 +90,19 @@ def update_cookie(ftp_upload=True):
         ftp.storbinary(f'STOR adventofcode-cookie.txt', file_like_obj)
         ftp.quit()
 
-    print(f'cookie: {c.value}')
+    print(f'new cookie: {c.value}')
 
 
 def get_task(year, day):
     with open(AOC_LOGINFILE_PATH, 'r') as f:
         config = json.load(f)
     url = f'https://adventofcode.com/{year}/day/{day}'
-    return requests.get(url, headers={'cookie': config['aoc']['cookie']}).content
+    req = requests.get(url, headers={'cookie': config['aoc']['cookie']})
+    if req.status_code == 500:
+        update_cookie()
+        return get_task(year, day)
+    print(req.status_code)
+    return req.content
 
 
 def task(year, day, part = 'all'):
@@ -124,7 +129,11 @@ def get_input(year, day, numeric = False, raw = False, lines = False):
     with open(AOC_LOGINFILE_PATH, 'r') as f:
         config = json.load(f)
     url = f'https://adventofcode.com/{year}/day/{day}/input'
-    result = requests.get(url, headers={'cookie': config['aoc']['cookie']}).text
+    req = requests.get(url, headers={'cookie': config['aoc']['cookie']})
+    if req.status_code == 500:
+        update_cookie()
+        return get_input(year, day, numeric, raw, lines)
+    result = req.text
     return parse_input(result, numeric, raw, lines)
 
 
@@ -143,11 +152,14 @@ def submit(year, day, part, answer):
         config = json.load(f)
 
     url = f'https://adventofcode.com/{year}/day/{day}/answer'
-    r = requests.post(url, headers={'cookie': config['aoc']['cookie']}, data={'level': part, 'answer': answer})
+    req = requests.post(url, headers={'cookie': config['aoc']['cookie']}, data={'level': part, 'answer': answer})
+    if req.status_code == 500:
+        update_cookie()
+        return submit(year, day, part, answer)
 
     h = html2text.HTML2Text()
     h.ignore_links = True
-    main = BeautifulSoup(r.content, 'html.parser').find('main')
+    main = BeautifulSoup(req.content, 'html.parser').find('main')
     text = h.handle(str(main))
     text = text.split('You can [Shareon')[0].split('[Return to Day ')[0].strip()
     print(text)
