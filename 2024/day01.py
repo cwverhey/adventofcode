@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys; sys.path.append(os.path.dirname(__file__)); import aoc
+
 import os; os.chdir(os.path.expanduser('~/Progs/adventofcode/2024/'))
 import helper
 helper.update_cookie()
