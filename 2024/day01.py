@@ -40,3 +40,6 @@ for i, v in enumerate(lists[0]):
 
 # submit answer
 aoc.submit(2024, 1, 2, cum_similarity)
+
+# push to git
+aoc.push_git(2024, 1)
