@@ -178,8 +178,12 @@ def push_git(year, day, message = None):
     for command in commands:
         run_cmd(command, str(Path(AOC_GITDIR).expanduser().resolve()))
 
+    print('Did you remember to save the file?')
+
     if input('push? [Y/N]:').lower() == 'y':
         run_cmd(['git', 'push'], str(Path(AOC_GITDIR).expanduser().resolve()))
+    else:
+        print('note: the file has been added and the commit is still staged!')
     
 def run_cmd(cmd, cwd):
     result = subprocess.run(cmd, text=True, capture_output=True, cwd=cwd)
