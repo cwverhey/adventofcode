@@ -19,7 +19,7 @@ for line in inputs:
     increasing = levels[0] < levels[1]
     for i,l1 in enumerate(levels[:-1]):
         l2 = levels[i+1]
-        if (l1 < l2) != increasing or abs(l1 - l2) < 1 or abs(l1 - l2) > 3:
+        if (l1 < l2) != increasing or not 1 <= abs(l1 - l2) <= 3:
             safe = False
     if safe:
         cum_safe += 1
@@ -36,25 +36,23 @@ def is_safe(levels):
     increasing = levels[0] < levels[1]
     for i,l1 in enumerate(levels[:-1]):
         l2 = levels[i+1]
-        if (l1 < l2) != increasing or abs(l1 - l2) < 1 or abs(l1 - l2) > 3:
+        if (l1 < l2) != increasing or not 1 <= abs(l1 - l2) <= 3:
             return False
     return True
 
 cum_safe = 0
 for line in inputs:
     levels = [int(x) for x in line.split()]
-    safe = is_safe(levels)
-    if safe:
+    if is_safe(levels):
         cum_safe += 1
         continue
     for i in range(0, len(levels)):
         levels_sub = levels.copy()
         del levels_sub[i]
-        if is_safe(levels_sub) and not safe:
-            safe = True
+        if is_safe(levels_sub):
             cum_safe += 1
-            continue
-
+            break
+        
 aoc.submit(2024, 2, 2, cum_safe)
 
 aoc.push_git(2024, 2)
