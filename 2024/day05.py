@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys, os; sys.path.append(os.path.dirname(__file__)); import aoc
+import sys, os; sys.path.append(os.path.dirname('__file__')); import aoc
 
 #
 # part 1
@@ -60,5 +60,22 @@ aoc.submit(2024, 5, 1, cum_middle)
 #
 
 aoc.task(2024, 5, 2)
+
+#inputs = aoc.examples(2024, 5, lines=True)[0]  # correct answer: 123
+inputs = aoc.get_input(2024, 5, lines=True)
+
+orders = [ [int(x) for x in o.split('|')] for o in inputs[:inputs.index('')] ]
+pagess = [ [int(x) for x in p.split(',')] for p in inputs[inputs.index('')+1:] ]
+
+cum_middle = 0
+for pages in pagess:
+    sorted = sort_pages(pages, orders)
+    if sorted == pages:
+        print('same!')
+    else:
+        print('different!')
+        cum_middle += sorted[ int((len(sorted)-1)/2) ]
+
+aoc.submit(2024, 5, 2, cum_middle)
 
 aoc.push_git(2024, 5)
