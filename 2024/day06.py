@@ -11,8 +11,8 @@ aoc.task(2024, 6, 1)
 
 from collections import Counter
 
-#inputs = aoc.examples(2024, 6, lines=True)[0]  # correct answer: 41
-inputs = aoc.get_input(2024, 6, lines=True)
+#inputs = aoc.examples(2024, 6)[0]  # correct answer: 41
+inputs = aoc.get_input(2024, 6)
 
 directions = (-1,0), (0,1), (1,0), (0,-1)
 
@@ -40,9 +40,23 @@ aoc.submit(2024, 6, 1, unique_positions)
 
 aoc.task(2024, 6, 2)
 
-def run_rounds(map, pos, dir):
+from copy import deepcopy
+
+
+def run_rounds(start_map: list, start_path: dict, extra_obstacle: tuple = None):
     directions = (-1,0), (0,1), (1,0), (0,-1)
-    path = [ [*pos, dir] ]
+
+    pos = list(start_path.keys())[-1][0:2]
+    dir = list(start_path.keys())[-1][2]
+    map = deepcopy(start_map)
+    path = deepcopy(start_path)
+
+    if extra_obstacle:
+        visited_positions = {pos[0:2]:None for pos in start_path}
+        if extra_obstacle in visited_positions:
+            return ['been_there', path]
+        map[extra_obstacle[0]][extra_obstacle[1]] = '#'
+
     while True:
         nextpos = [sum(x) for x in zip(pos, directions[dir])]
         if not 0 <= nextpos[0] < len(map) or not 0 <= nextpos[1] < len(map[0]):
@@ -51,29 +65,31 @@ def run_rounds(map, pos, dir):
             dir = (dir+1) % 4
         else:
             pos = nextpos
-            if [*pos, dir] in path:
+            if (*pos, dir) in path:
                 return ['loop', path]
-            path.append( [*pos, dir] )
-                
+            path[(*pos, dir)] = None
 
-#inputs = aoc.examples(2024, 6, lines=True)[0]  # correct answer: 6
-inputs = aoc.get_input(2024, 6, lines=True)
+
+#inputs = aoc.examples(2024, 6)[0]  # correct answer: 6
+inputs = aoc.get_input(2024, 6)
 
 pos = [[i,x.index('^')] for i,x in enumerate(inputs) if '^' in x][0]
+map = [list(line) for line in inputs]
 dir = 0
-_, potential_obstacle_positions = run_rounds(inputs, pos, dir)
+start_path = { (*pos, dir): None }
+result, original_path = run_rounds(map, start_path)
+assert result == 'exit'
 
-obstacle_positions = []
-for i,p in enumerate(potential_obstacle_positions[1:]):
-    print(f'{i+1}/{len(potential_obstacle_positions)}: ', end='')
-    newmap = inputs.copy()
-    newmap[ p[0] ] = newmap[ p[0] ][ :p[1] ] + '#' + newmap[ p[0] ][ p[1]+1: ]
-    result, _ = run_rounds(newmap, pos, dir)
-    print(result)
-    if result == 'loop':
-        obstacle_positions.append(p[0:2])
+obstacles = {'exit': {}, 'loop': {}, 'been_there': {}}
+for i in range(1,len(original_path)):
+    print(f'{i}/{len(original_path)}')
+    start_path = dict(list(original_path.items())[:i])
+    obstacle = list(original_path.keys())[i][:2]
+    result, _ = run_rounds(map, start_path, obstacle)
+    print(i, obstacle, start_path, result)
+    obstacles[result][obstacle] = None
 
-unique_positions = len(Counter([tuple(x) for x in obstacle_positions]))
+unique_positions = len(obstacles['loop'])
 
 aoc.submit(2024, 6, 2, unique_positions)
 
