@@ -90,7 +90,7 @@ def update_cookie(ftp_upload=True):
         ftp.storbinary(f'STOR adventofcode-cookie.txt', file_like_obj)
         ftp.quit()
 
-    print(f'new cookie: {config['aoc']['cookie']}')
+    print(f'new cookie: {config["aoc"]["cookie"]}')
 
 
 def get_task(year, day):
@@ -101,7 +101,6 @@ def get_task(year, day):
     if req.status_code == 500:
         update_cookie()
         return get_task(year, day)
-    print(req.status_code)
     return req.content
 
 
