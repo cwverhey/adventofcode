@@ -86,7 +86,7 @@ for i in range(1,len(original_path)):
     start_path = dict(list(original_path.items())[:i])
     obstacle = list(original_path.keys())[i][:2]
     result, _ = run_rounds(map, start_path, obstacle)
-    print(i, obstacle, start_path, result)
+    #print(i, obstacle, start_path, result)
     obstacles[result][obstacle] = None
 
 unique_positions = len(obstacles['loop'])
