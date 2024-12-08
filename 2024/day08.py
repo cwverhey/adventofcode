@@ -59,7 +59,6 @@ from collections import defaultdict
 from pprint import pprint
 import itertools
 from math import gcd
-from functools import reduce
 
 #inputs = aoc.examples(2024, 8)[0]  # correct answer: 34
 inputs = aoc.get_input(2024, 8)
