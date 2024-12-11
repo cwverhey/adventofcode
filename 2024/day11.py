@@ -9,11 +9,6 @@ import sys, os; sys.path.append(os.path.dirname(__file__)); import aoc
 
 aoc.task(2024, 11, 1)
 
-# every blink, first applicable rule:
-# 0 -> 1
-# even number of digits -> 2 stones: left half of digits left stone, right half right stone
-# -> * 2024
-
 #inputs = [125, 17]  # correct answer: 55312
 inputs = aoc.get_input(2024, 11, numeric=True)
 
