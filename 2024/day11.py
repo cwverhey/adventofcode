@@ -57,7 +57,7 @@ def blink(nums, times):
         nums = result
     return nums
 
-tally = {stone:1 for stone in inputs}
+tally = {stone:1 for stone in inputs}  # eg: {125: 1, 17: 1}
 
 stones = sum(blink(tally, 75).values())
 
