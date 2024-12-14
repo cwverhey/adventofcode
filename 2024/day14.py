@@ -68,24 +68,23 @@ time = 0
 #for i, v in enumerate(robots_v):
 #    robots_p[i] = ((robots_p[i] + robots_v[i] * time) % space).tolist()
 while True:
+    if time % 100 == 0:
+        print(time)
     colmax = max(Counter([p[0] for p in robots_p]).values())
-    print(f'{time}: {colmax}', end=' ')
     if colmax > 30:
         rowmax = max(Counter([p[1] for p in robots_p]).values())
         if rowmax > 20:
-            print()
             for y in range( space[1] ):
                 print(''.join(['◻️' if [x,y] in robots_p else '◼️' for x in range( space[0] )]))
-            if input('[C]ontinue/Quit? ').lower() == 'q':
+            print(f'time: {time} seconds')
+            if input('Correct? Y/N: ').lower() == 'y':
                 break
     time += 1
     for i, v in enumerate(robots_v):
         robots_p[i] = ((robots_p[i] + robots_v[i]) % space).tolist()
 
-print('the answer:', time)
-
 # submit answer
 aoc.submit(2024, 14, 2, time)
 
 # push to git
-aoc.push_git(2024, 14)
+# aoc.push_git(2024, 14)
