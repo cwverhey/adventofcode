@@ -61,7 +61,8 @@ moves = [ dirs[move] for i in inputs[ inputs.index('') : ] for move in list(i) ]
 pos = robot_start
 view()
 for i,m in enumerate(moves):
-    print(f'{i+1}/{len(moves)}')
+    if i%100 == 0:
+        print(f'{i/len(moves)*100:.0f}%', end='\r')
     pos = move(pos, m)
 view()
 
