@@ -43,6 +43,7 @@ def path_values(keypad, startpos, path):
         poss.append(keypad[ pos[1] ][ pos[0] ])
     return poss
 
+@cache
 def keypress_options(keypad, startval, endval):
     '''options for keypresses to get from value a to b'''
     startpos = coordinate(keypad, startval)
