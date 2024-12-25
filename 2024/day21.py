@@ -9,6 +9,8 @@ aoc.task(2024, 21)
 inputs = aoc.get_input(2024, 21)  # 163086 at 2, 198466286401228 at 25
 
 
+from functools import cache
+
 # assumption: the best path to a key is always one from those with the shortest paths
 # assumption: the best path has the least variation of directions (eg > > ^ is better than > ^ >)
 # assumption: at the end of every command line, all robots end back on A
