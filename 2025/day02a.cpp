@@ -1,6 +1,10 @@
+// g++-15 day02a.cpp -o day02a
+#include <vector>
 #include <iostream>
 #include <sstream>
 #include <numeric> // std::accumulate
+#include <cmath> // std::pow
+#include <algorithm> // std::binary_search
 
 struct Range {
     long long start;

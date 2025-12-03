@@ -1,10 +1,18 @@
+// g++-15 -O0 day02b.cpp -o day02b
+// g++-15 -O3 -march=native -flto -Wall -Wextra -Wshadow day02b.cpp -o day02b
+#include <vector>
 #include <iostream>
 #include <sstream>
 #include <numeric> // std::accumulate
+#include <cmath> // std::pow
+#include <algorithm> // std::binary_search
+
+using ulli = unsigned long long int;
+
 struct Range {
-    long long start;
-    long long end;
-    int width;
+    ulli start;
+    ulli end;
+    unsigned int width;
 };
 
 std::vector<std::string> split(std::stringstream& ss, const char& sep) {
@@ -28,8 +36,8 @@ std::vector<Range> split_into_ranges(const std::string& s) {
     for(const auto& part : split(s, ',')) {
         std::vector<std::string> numbers = split(part, '-');
 
-        long long start, end;
-        for(int i = numbers[0].length(); i <= numbers[1].length(); ++i) {
+        ulli start, end;
+        for(unsigned int i = numbers[0].length(); i <= numbers[1].length(); ++i) {
             if(i == numbers[0].length())
                 start = std::stoll(numbers[0]);
             else
@@ -44,19 +52,19 @@ std::vector<Range> split_into_ranges(const std::string& s) {
     return result;
 }
 
-long long rep_str(const std::string& val, const int& rep) {
+ulli rep_str(const std::string& val, const int& rep) {
     std::string result;
     for(int i = 0; i < rep; ++i)
         result += val;
     return std::stoll(result);
 }
 
-long long rep_num(const long long& val, const int& rep) {
+ulli rep_num(const ulli& val, const int& rep) {
     std::string val_str = std::to_string(val);
     return rep_str(val_str, rep);
 }
 
-void insert_repetition(const Range& range, std::vector<long long>& repetitions, long long& new_repetition) {
+void insert_repetition(const Range& range, std::vector<ulli>& repetitions, ulli& new_repetition) {
     if(new_repetition >= range.start && new_repetition <= range.end) { // check in range
         if (!std::binary_search(repetitions.begin(), repetitions.end(), new_repetition)) { // check unique
             auto i = std::lower_bound(repetitions.begin(), repetitions.end(), new_repetition);
@@ -65,19 +73,19 @@ void insert_repetition(const Range& range, std::vector<long long>& repetitions, 
     }
 }
 
-void find_repetitions(const Range& range, const int& width, std::vector<long long>& reps) {
+void find_repetitions(const Range& range, const int& width, std::vector<ulli>& reps) {
     int times = range.width / width;
     std::string start = std::to_string(range.start).substr(0, width);
     std::string end = std::to_string(range.end).substr(0, width);
     
     if(start == end) {
-        long long rep = rep_str(start, times);
+        ulli rep = rep_str(start, times);
         insert_repetition(range, reps, rep);
     } else {
-        long long start_num = stoll(start);
-        long long end_num = stoll(end);
-        for(long long i = start_num; i <= end_num; ++i) {
-            long long rep = rep_num(i, times);
+        ulli start_num = stoll(start);
+        ulli end_num = stoll(end);
+        for(ulli i = start_num; i <= end_num; ++i) {
+            ulli rep = rep_num(i, times);
             insert_repetition(range, reps, rep);
         }
     }
@@ -108,13 +116,13 @@ int main() {
 
     std::vector<Range> ranges = split_into_ranges(line);
 
-    std::vector<long long> repetitions;
+    std::vector<ulli> repetitions;
     for (const Range& range : ranges) {
         for (const auto width : divisors(range.width))
             find_repetitions(range, width, repetitions);
     }
 
-    long long sum = std::accumulate(repetitions.begin(), repetitions.end(), 0LL);
+    ulli sum = std::accumulate(repetitions.begin(), repetitions.end(), 0LL);
     std::cout << sum << '\n';
 
     return 0;
