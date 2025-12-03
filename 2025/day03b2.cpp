@@ -1,21 +1,11 @@
-// g++-15 -O0 day03b.cpp -o day03b && ./day03b < day03example.txt
-// g++-15 -O3 -march=native -flto -Wall -Wextra -Wshadow day03b.cpp -o day03b && ./day03b < day03input.txt
+// g++-15 -O0 day03b2.cpp -o day03b2 && ./day03b2 < day03example.txt
+// g++-15 -O3 -march=native -flto -Wall -Wextra -Wshadow day03b2.cpp -o day03b2 && ./day03b2 < day03input.txt
 
 #include <iostream>
 
 using ulli = unsigned long long int;
 
 const int batteriesEnabled = 12;
-
-std::pair<int, int> firstHighest(const std::string& bank, const unsigned int start, const unsigned int end) {
-    int pos{0}, val{0};
-    for(unsigned int i = start; i <= end; ++i) if(bank[i] > val) {
-        pos = i;
-        val = bank[i];
-    }
-    val -= '0';
-    return {pos, val};
-}
 
 int main() {
 
@@ -30,9 +20,13 @@ int main() {
         unsigned int left = 0;
         unsigned int right = bank.size()-batteriesEnabled;
         while(right < bank.size()) {
-            auto nextEnabled = firstHighest(bank, left, right);
-            bank_value = bank_value * 10 + nextEnabled.second;
-            left = nextEnabled.first + 1;
+            int pos{0}, val{0};
+            for(unsigned int i = left; i <= right; ++i) if(bank[i] > val) {
+                pos = i;
+                val = bank[i];
+            }
+            bank_value = bank_value * 10 + (val-'0');
+            left = pos + 1;
             right++;
         }
 
