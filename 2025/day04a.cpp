@@ -7,13 +7,6 @@
 
 struct PointNeighbours {
     int walls{0}, full{0}, empty{0};
-
-    PointNeighbours operator+(const PointNeighbours& other) const {
-        return {
-            walls + other.walls, full + other.full, empty + other.empty
-        };
-    }
-
 };
 
 std::ostream& operator<<(std::ostream& os, const PointNeighbours& p) {
@@ -24,54 +17,55 @@ class Map {
 
     public:
 
-    std::vector<std::vector<char>> map;
-    int width, height;
+        std::vector<std::vector<bool>> map;
+        int width, height;
 
-    Map(std::istream& input) {
-        std::string line;
-        while (std::getline(input, line)) {
-            std::vector<char> chars(line.begin(), line.end());
-            map.push_back(chars);
-        }
-        width = map[0].size();
-        height = map.size();
-    }
-
-    PointNeighbours neighbours(int x, int y) {
-        PointNeighbours result = PointNeighbours();
-        for (int nx = x-1; nx <= x+1; ++nx) {
-            for (int ny = y-1; ny <= y+1; ++ny) {
-                if (nx == x && ny == y)
-                    continue;
-                if (nx < 0 || nx == width || ny < 0 || ny == height)
-                    result.walls++;
-                else if (map[ny][nx] == '@')
-                    result.full++;
-                else
-                    result.empty++;
+        Map(std::istream& input) {
+            std::string line;
+            while (std::getline(input, line)) {
+                std::vector<bool> line_bool;
+                for (char c : line)
+                    line_bool.emplace_back(c == '@');
+                map.emplace_back(line_bool);
             }
+            width = map[0].size();
+            height = map.size();
         }
-        return result;
-    };
 
-    void forAllPoints(std::function<void(int&, int&)> yield) {
-        for(int x = 0; x < width; ++x)
-            for(int y = 0; y < height; ++y)
-                yield(x, y);
-    }
+        PointNeighbours neighbours(int x, int y) {
+            PointNeighbours result;
+            for (int nx = x-1; nx <= x+1; ++nx) {
+                for (int ny = y-1; ny <= y+1; ++ny) {
+                    if (nx == x && ny == y)
+                        continue;
+                    if (nx < 0 || nx == width || ny < 0 || ny == height)
+                        result.walls++;
+                    else if (map[ny][nx])
+                        result.full++;
+                    else
+                        result.empty++;
+                }
+            }
+            return result;
+        };
+
+        void forAllPoints(std::function<void(int&, int&)> yield) {
+            for(int x = 0; x < width; ++x)
+                for(int y = 0; y < height; ++y)
+                    yield(x, y);
+        }
 
 };
 
 std::ostream& operator<<(std::ostream& os, const Map& m) {
-        for (std::vector<char> row : m.map) {
-            for (char c : row)
-                os << c;
+        for (auto& row : m.map) {
+            for (bool b : row)
+                os << (b ? "🟩" : "⬜");
             os << '\n';
         }
         os << m.width << 'x' << m.height;
     return os;
 }
-
 
 int main() {
     Map map = Map(std::cin);
@@ -79,7 +73,7 @@ int main() {
 
     int qualifyingRolls = 0;
     map.forAllPoints([&map, &qualifyingRolls](int& x, int& y) {
-        if (map.map[y][x] == '@' && map.neighbours(x,y).full < 4)
+        if (map.map[y][x] && map.neighbours(x,y).full < 4)
             qualifyingRolls++;
     });
     std::cout << qualifyingRolls << '\n';
