@@ -8,17 +8,22 @@
 
 using ulli = unsigned long long int;
 
-void addRange(std::vector<std::pair<ulli,ulli>>& ranges, ulli& start, ulli& end) {
+void addRange(std::vector<std::pair<ulli,ulli>>& ranges, std::pair<ulli,ulli>& newRange) {
 
-    ranges.push_back({start, end});
-
-    std::sort(ranges.begin(), ranges.end(), [](const auto& a, const auto& b) {
+    // add in sorted position
+    auto it = std::lower_bound(ranges.begin(), ranges.end(), newRange, [](const auto& a, const auto& b){
         return a.first < b.first;
     });
+    ranges.insert(it, newRange);
 
-    for (int i = ranges.size()-1; i > 0; --i) if (ranges[i].first <= ranges[i-1].second) {
-        ranges[i-1].second = std::max(ranges[i].second, ranges[i-1].second);
-        ranges.erase(ranges.begin() + i);
+    // merge overlaps
+    for (int i = ranges.size()-1; i > 0; --i) {
+        if (ranges[i].first <= ranges[i-1].second) {
+            ranges[i-1].second = std::max(ranges[i].second, ranges[i-1].second);
+            ranges.erase(ranges.begin() + i);
+        }
+        if (ranges[i].second < newRange.first)
+            break;
     }
 
 }
@@ -34,9 +39,9 @@ int main() {
     std::string line;
     while (std::getline(std::cin, line)) {
         if (line == "") break;
-        ulli a, b; char _; std::istringstream iss(line);
-        iss >> a >> _ >> b;
-        addRange(ranges, a, b);
+        std::pair<ulli,ulli> newRange; char _; std::istringstream iss(line);
+        iss >> newRange.first >> _ >> newRange.second;
+        addRange(ranges, newRange);
     }
     //printRanges(ranges);
     
