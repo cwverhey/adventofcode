@@ -3,12 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <numeric>
-#include <cmath>
-#include <algorithm>
-#include <ranges>
-#include <unordered_set>
-#include <functional>
+#include <algorithm> // sort
 
 using ulli = unsigned long long int;
 

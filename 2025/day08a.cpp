@@ -3,12 +3,9 @@
 
 #include <iostream>
 #include <vector>
-#include <numeric>
-#include <cmath>
-#include <algorithm>
-#include <ranges>
+#include <cmath>  // sqrt
+#include <algorithm>  // sort
 #include <unordered_set>
-#include <functional>
 
 using ulli = unsigned long long int;
 
