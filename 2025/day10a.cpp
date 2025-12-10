@@ -8,139 +8,120 @@
 #include <algorithm>
 #include <cstdint>
 
-std::string readUntil(std::istream& in, char endChar) {
-    std::string result;
-    char c;
-    while (in.get(c)) {
-        if ( c == endChar)
-            break;
-        result.push_back(c);
-    }
-    return result;
+using state = uint16_t;
+
+void printState(const state& s) {
+    for (int i = 16; i >= 0; --i)
+        std::cout << ((s >> i) & 1 ? "🟡" : "🟠");
 }
 
-std::string readUntil(std::string& in, char endChar) {
-    std::istringstream iss(in);
-    return readUntil(iss, endChar);
+void printModifier(const state& s) {
+    for (int i = 16; i >= 0; --i)
+        std::cout << ((s >> i) & 1 ? "🔀" : "⬛");
 }
 
-struct State {
-    std::vector<int> state;
-    
-    bool operator==(const State& other) const {
-        return state == other.state;
-    }
-};
-
-std::ostream& operator<<(std::ostream& os, const State& s) {
-    for (bool b : s.state)
-        os << (b ? "🟡" : "🟠");
-    return os;
-}
-
-struct Machine { State goal; std::vector<std::vector<int>> buttons; std::vector<int> joltages; };
+struct Machine { state goal{0}; std::vector<state> buttons; std::vector<int> joltages; };
 
 std::ostream& operator<<(std::ostream& os, const Machine& m) {
 
-    os << m.goal;
+    printState(m.goal);
+    os << '\n';
 
-    for (std::vector<int> lamps : m.buttons) {
-        os << " ( ";
-        for (int l : lamps)
-            os << l << ' ';
-        os << ')';
+    for (state b : m.buttons) {
+        printModifier(b);
+        os << '\n';
     }
-    os << ' ';
 
+    os << "joltages: ";
     for (int j : m.joltages)
         os << j << ' ';
 
     return os;
 }
 
-std::vector<State> nextStates(const Machine& machine, const State& state) {
-    std::vector<State> result;
-
-    for (std::vector<int> button : machine.buttons) {
-        State newState = state;
-        for (int pos : button)
-            newState.state[pos] = !newState.state[pos];
-        result.emplace_back(newState);
+void combinations(const std::vector<state>& arr, int n, int start, std::vector<int>& current, std::vector<std::vector<int>>& result) {
+    if (current.size() == n) {
+        result.push_back(current);
+        return;
     }
-    return result;
+    for (int i = start; i < arr.size(); ++i) {
+        current.push_back(arr[i]);
+        combinations(arr, n, i + 1, current, result);
+        current.pop_back();
+    }
 }
-
-
 
 int main() {
 
     int requiredPresses = 0;
 
-    // parse input
-    {
-        std::regex re_square(R"(\[([^\]]+)\])");
-        std::regex re_parentheses(R"(\((.*?)\))");
-        std::regex re_numbers(R"((\d+))");
-        std::regex re_curly(R"(\{([^}]+)\})");
-        std::smatch matches;
-        std::string line;
-        while (getline(std::cin, line)) {
+    std::regex re_square(R"(\[([^\]]+)\])");
+    std::regex re_parentheses(R"(\((.*?)\))");
+    std::regex re_numbers(R"((\d+))");
+    std::regex re_curly(R"(\{([^}]+)\})");
+    std::smatch matches;
+    std::string line;
+    while (getline(std::cin, line)) {
 
-            Machine machine;
-            
-            std::regex_search(line, matches, re_square);
-            for (char c : static_cast<std::string>(matches[1]))
-                machine.goal.state.push_back(c == '#');
-
-            for (std::sregex_iterator it(line.begin(), line.end(), re_parentheses), end; it != end; ++it) {
-                std::string subline = (*it)[1].str();
-                std::vector<int> b;
-                for (std::sregex_iterator it2(subline.begin(), subline.end(), re_numbers), end; it2 != end; ++it2)
-                    b.push_back(stoi((*it2)[1].str()));
-                machine.buttons.emplace_back(b);
-            }
-
-            std::regex_search(line, matches, re_curly);
-            std::string substr = matches[1];
-            for (std::sregex_iterator it(substr.begin(), substr.end(), re_numbers), end; it != end; ++it)
-                machine.joltages.emplace_back(stoi((*it)[1].str()));
-
-            std::cout << machine << '\n';
-
-            // remember seen states
-            std::vector<State> seenStates;
-
-            // initialize first state
-            State initialState;
-            initialState.state.resize(machine.goal.state.size());
-            std::vector<State> states = {initialState};
-
-            // iterate until match
-            int i = 0;
-            bool success = false;
-            while (!success) {
-                ++i;
-                std::cout << "press " << i << '\n';
-                std::vector<State> newStates;
-                for (State s : states) {
-                    std::vector<State> n = nextStates(machine, s);
-                    for (State s : n) {
-                        //std::cout << s << '\n';
-                        if (s == machine.goal) {
-                            success = true;
-                            break;
-                        }
-                        if (std::find(seenStates.begin(), seenStates.end(), s) == seenStates.end())
-                            seenStates.emplace_back(s);
-                    }
-                    newStates.insert(newStates.end(), n.begin(), n.end());
-                }
-                if (success)
-                    break;
-                states = newStates;
-            }
-            requiredPresses += i;
+        Machine machine;
+        std::cout << "new machine:\n";
+        
+        // parse goal
+        std::regex_search(line, matches, re_square);
+        std::string goal = matches[1];
+        std::reverse(goal.begin(), goal.end());
+        for (char c : goal) {
+            machine.goal <<= 1;
+            machine.goal |= c == '#';
         }
+
+        // parse buttons
+        for (std::sregex_iterator it(line.begin(), line.end(), re_parentheses), end; it != end; ++it) {
+            std::string subline = (*it)[1].str();
+            state s = 0;
+            for (std::sregex_iterator it2(subline.begin(), subline.end(), re_numbers), end; it2 != end; ++it2)
+                s |= (1 << stoi((*it2)[1].str()));
+            machine.buttons.emplace_back(s);
+        }
+
+        // parse joltages
+        std::regex_search(line, matches, re_curly);
+        std::string substr = matches[1];
+        for (std::sregex_iterator it(substr.begin(), substr.end(), re_numbers), end; it != end; ++it)
+            machine.joltages.emplace_back(stoi((*it)[1].str()));
+
+        std::cout << machine << "\n\n";
+
+        // try n combinations of buttons
+        int success = false;
+        int n = 0;
+        while (!success) {
+            ++n;
+            std::cout << "try " << n << " button(s)\n";
+
+            std::vector<int> current;
+            std::vector<std::vector<int>> result;
+            combinations(machine.buttons, n, 0, current, result);
+            for (auto& comb : result) {
+
+                state s = 0;
+                for (state x : comb) {
+                    s ^= x;
+                    //printModifier(x);
+                    //std::cout << '\n';
+                }
+                printState(s);
+                std::cout << "\n";
+
+                if(s == machine.goal) {
+                    success = true;
+                    break;
+                }
+            }
+        }
+
+        std::cout << "done in " << n << " presses\n\n";
+        requiredPresses += n;
     }
 
     std::cout << requiredPresses << '\n';
