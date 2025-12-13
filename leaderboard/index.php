@@ -39,8 +39,12 @@ $cachefile = "cache/$board-$year.json";
 $years = range(date('Y')-1, 2015, -1); // first AoC edition was 2015
 if(date('m') == '12') array_unshift($years, intval(date('Y'))); // add current year if month ≥ 12
 
-$days = range(1,25);
-if($year == date('Y') && date('j') <= 25) { // limit day range if from 1-24 december:
+if($year >= 2025)
+	$days = range(1,12);
+else
+	$days = range(1,25);
+
+if($year == date('Y') && date('j') <= max($days)) { // limit day range if from 1-24 december:
     if(date('G') >= 6) { // if after 6 AM local time:
         $days = range(1, date('j')); // include today
     } else {
