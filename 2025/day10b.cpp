@@ -8,8 +8,12 @@
 #include <regex>
 #include <algorithm>
 #include <limits>
-// last call
+
 struct Machine { std::vector<int> goal; std::vector<std::vector<int>> buttons; std::vector<bool> buttonIsLastSamurai; int width; int bestScore; };
+
+Machine machine;
+int buttonId;
+int totalPressed;
 
 int maxPresses(const std::vector<int>& button, const std::vector<int>& goal) {
     int result = std::numeric_limits<int>::max();
@@ -48,57 +52,50 @@ bool isZero(std::vector<int>& vec) {
     return true;
 }
 
-void iterateButton(Machine& m, int& buttonId, int& totalPressed); // forward declaration
+void iterateButton(); // forward declaration
 
-void pressButton(Machine& m, int& buttonId, int& totalPressed, const int presses, const bool isMax) {
-
-    if(m.bestScore <= totalPressed + presses)
-        return;
+void pressButton(const int presses, const bool isMax) {
     
     // press
     totalPressed += presses;
-    for (int i : m.buttons[buttonId])
-        m.goal[i] -= presses;
+    for (int i : machine.buttons[buttonId])
+        machine.goal[i] -= presses;
 
-    if (isMax && isZero(m.goal)) {
+    if (isMax && isZero(machine.goal)) {
         std::cout << "solution in " << totalPressed << " presses\n\n";
-        m.bestScore = totalPressed;
-    } else if(buttonId + 1 < m.buttons.size()) {
+        machine.bestScore = totalPressed;
+    } else if(buttonId + 1 < machine.buttons.size()) {
         ++buttonId;
-        iterateButton(m, buttonId, totalPressed);
+        iterateButton();
         --buttonId;
     }
 
     // unpress
     totalPressed -= presses;
-    for (int i : m.buttons[buttonId])
-        m.goal[i] += presses;
+    for (int i : machine.buttons[buttonId])
+        machine.goal[i] += presses;
 
 }
 
-void iterateButton(Machine& m, int& buttonId, int& totalPressed) {
+void iterateButton() {
 
-    int max = maxPresses(m.buttons[buttonId], m.goal);
+    int max = maxPresses(machine.buttons[buttonId], machine.goal);
 
-    pressButton(m, buttonId, totalPressed, max, true);
+    if(machine.bestScore <= totalPressed + max)
+        return;
 
-    if(m.buttons[buttonId].size() > 1 && !m.buttonIsLastSamurai[buttonId])
+    pressButton(max, true);
+
+    if(machine.buttons[buttonId].size() > 1 && !machine.buttonIsLastSamurai[buttonId])
         for (int presses = max - 1; presses >= 0; --presses)
-            pressButton(m, buttonId, totalPressed, presses, false);
+            pressButton(presses, false);
 
-}
-
-void startIteration(Machine& m) {
-    int buttonId = 0;
-    int totalPressed = 0;
-    iterateButton(m, buttonId, totalPressed);
 }
 
 int main() {
 
     int totalBestScore = 0;
 
-    std::regex re_square(R"(\[([^\]]+)\])");
     std::regex re_parentheses(R"(\((.*?)\))");
     std::regex re_numbers(R"((\d+))");
     std::regex re_curly(R"(\{([^}]+)\})");
@@ -106,8 +103,8 @@ int main() {
     std::string line;
     while (getline(std::cin, line)) {
 
-        Machine machine;
         std::cout << "New machine:\n";
+        machine = Machine{};
 
         // parse buttons
         for (std::sregex_iterator it(line.begin(), line.end(), re_parentheses), end; it != end; ++it) {
@@ -151,7 +148,9 @@ int main() {
         std::cout << "solving...\n";
         
         // iterate
-        startIteration(machine);
+        buttonId = 0;
+        totalPressed = 0;
+        iterateButton();
 
         // print
         //std::cout << machine << "\n";
