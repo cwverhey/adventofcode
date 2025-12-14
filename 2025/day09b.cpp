@@ -155,8 +155,17 @@ int main() {
         }
     }
 
-    //drawLine(tileMap, largestP, largestQ);
-    //drawMap(tileMap);
+    drawLine(tileMap, largestP, largestQ);
+    drawMap(tileMap);
+
+    //std::cout << "<svg xmlns=\"http://www.w3.org/2000/svg\" stroke-width=\"0\" viewBox=\"" << xValues[0] << ' ' << yValues[0] << ' ' << xValues[xValues.size()-1] << ' ' << yValues[yValues.size()-1] << "\">\n";
+    //std::cout << "<polyline fill=\"darkgreen\" points=\"";
+    //for (Point& p : redTiles)
+    //    std::cout << p.x << ',' << p.y << '\n';
+    //std::cout << redTiles[0].x << ',' << redTiles[0].y;
+    //std::cout << "\"></polyline>\n";
+    //std::cout << "<rect x=\""<< std::min(largestP.x, largestQ.x) << "\" y=\"" << std::min(largestP.y, largestQ.y) << "\" width=\"" << std::abs(largestP.x - largestQ.x) << "\" height=\"" << std::abs(largestP.y - largestQ.y) << "\" fill=\"steelblue\" />\n";
+    //std::cout << "</svg>";
     
     std::cout << largestRectangle << '\n';
 
